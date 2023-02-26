@@ -6,24 +6,17 @@ const validation = require('../validation');
 
 router.get('/getUser', async (req, res) => {
     try {
-        console.log(req.session.userId);
         if (req.session.userId) {
-            console.log(111);
             const user = await userData.getUser(req.session.userId);
-            console.log(222);
             if (user._id) {
-                console.log(333);
                 res.status(200).json(user);
             } else {
-                console.log(444);
                 res.status(500).json({error: 'Internal server error'});
             }
         } else {
-            console.log(555);
             res.status(200).json({});
         }
     } catch (e) {
-        console.log(666);
         res.status(400).json({error: e});
     }
 });
@@ -35,13 +28,11 @@ router.post('/logIn', async (req, res) => {
         
         const user = await userData.logIn(req.query.email, req.query.password);
         if (user._id) {
-            console.log('a');
             req.session.userId = user._id;
             req.session.save()
             console.log(req.session.userId);
             res.status(200).json(user);
         } else {
-            console.log('b');
             res.status(500).json({error: 'Internal server error'});
         }
     } catch (e) {
@@ -74,9 +65,12 @@ router.post('/signUp', async (req, res) => {
 });
 
 router.get('/logOut', async (req, res) => {
-    console.log(req.session.userId);
-    if (req.session.userId) req.session.destroy();
-    return res.status(200).json({success: 'You have successfully logged out'});
+    if (req.session.userId) {
+        req.session.destroy();
+        return res.status(200).json({success: 'You have successfully logged out'});
+    } else {
+        return res.status(401).json({error: 'You are not logged in'});
+    }
 });
 
 module.exports = router;

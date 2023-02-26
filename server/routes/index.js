@@ -1,6 +1,8 @@
+const projectRoutes = require('./projects');
 const userRoutes = require('./users');
 
 const constructorMethod = (app) => {
+  app.use('/projects', projectRoutes);
   app.use('/', userRoutes);
 
   app.use('*', (req, res) => {

@@ -19,7 +19,10 @@ import { checkEmail, checkPassword, checkString, comparePasswords } from './vali
 const drawerWidth = 220;
 
 function App() {
+  axios.defaults.withCredentials = true;
+
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createProjectTitleError, setCreateProjectTitleError] = useState(null);
@@ -47,8 +50,6 @@ function App() {
   const [signUpRoleError, setSignUpRoleError] = useState(null);
 
   const [logOutOpen, setLogOutOpen] = useState(false);
-  
-  axios.defaults.withCredentials = true;
 
   useEffect(() => {
 		async function fetchData() {
@@ -58,6 +59,7 @@ function App() {
 			} catch (e) {
 				setUser(null);
 			}
+      setLoading(false);
 		}
 		fetchData();
 	}, []);
@@ -307,312 +309,308 @@ function App() {
 
   return (
     <Router>
-      <div className='App'>
-        <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
-          <DialogTitle>Create Project</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Please enter a title for your project.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="Title"
-              label="Title"
-              type="text"
-              fullWidth
-              variant="standard"
-            />
-            {createProjectTitleError && <Alert severity="error" onClose={hideCreateProjectTitleError}>{createProjectTitleError}</Alert>}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCreateProjectClose}>Cancel</Button>
-            <Button onClick={handleCreateProjectClose}>Submit</Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={joinProjectOpen} onClose={handleJoinProjectClose}>
-          <DialogTitle>Join Project</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Please enter the ID of the project you want to join.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="ID"
-              label="ID"
-              type="text"
-              fullWidth
-              variant="standard"
-            />
-            {joinProjectIdError && <Alert severity="error" onClose={hideJoinProjectIdError}>{joinProjectIdError}</Alert>}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleJoinProjectClose}>Cancel</Button>
-            <Button onClick={handleJoinProjectClose}>Submit</Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={logInOpen} onClose={handleLogInClose}>
-          <DialogTitle>Log In</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="Email"
-              label="Email"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={handleLogInEmailChange}
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="Password"
-              label="Password"
-              type="password"
-              fullWidth
-              variant="standard"
-              onChange={handleLogInPasswordChange}
-            />
-            {logInError && <Alert severity="error" onClose={hideLogInError}>{logInError}</Alert>}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleLogInClose}>Cancel</Button>
-            <Button onClick={handleLogInSubmit}>Submit</Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={signUpOpen} onClose={handleSignUpClose}>
-          <DialogTitle>Sign Up</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={4}>
-              <Grid item xs={6}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  id="First Name"
-                  label="First Name"
-                  type="text"
-                  fullWidth
-                  variant="standard"
-                  onChange={handleSignUpFirstNameChange}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  autoFocus
-                  margin="dense"
-                  id="Last Name"
-                  label="Last Name"
-                  type="text"
-                  fullWidth
-                  variant="standard"
-                  onChange={handleSignUpLastNameChange}
-                />
-              </Grid>
-            </Grid>
-            <Grid container spacing={4}>
-              <Grid item xs={6}>
-                {signUpFirstNameError && <Alert severity="error" onClose={hideSignUpFirstNameError}>{signUpFirstNameError}</Alert>}
-              </Grid>
-              <Grid item xs={6}>
-                {signUpLastNameError && <Alert severity="error" onClose={hideSignUpLastNameError}>{signUpLastNameError}</Alert>}
-              </Grid>
-            </Grid>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="Email"
-              label="Email"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={handleSignUpEmailChange}
-            />
-            {signUpEmailError && <Alert severity="error" onClose={hideSignUpEmailError}>{signUpEmailError}</Alert>}
-            <Grid container spacing={4}>
-              <Grid item xs={6}>
-                <TextField
-                  margin="dense"
-                  id="Password"
-                  label="Password"
-                  type="password"
-                  fullWidth
-                  variant="standard"
-                  onChange={handleSignUpPasswordChange}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  margin="dense"
-                  id="Confirm Password"
-                  label="Confirm Password"
-                  type="password"
-                  fullWidth
-                  variant="standard"
-                  onChange={handleSignUpConfirmPasswordChange}
-                />
-              </Grid>
-            </Grid>
-            <Grid container spacing={4}>
-              <Grid item xs={6}>
-                {signUpPasswordError && <Alert severity="error" onClose={hideSignUpPasswordError}>{signUpPasswordError}</Alert>}
-              </Grid>
-              <Grid item xs={6}>
-                {signUpConfirmPasswordError && <Alert severity="error" onClose={hideSignUpConfirmPasswordError}>{signUpConfirmPasswordError}</Alert>}
-              </Grid>
-            </Grid>
-            <FormControl fullWidth sx={{ mt: 2, mb: .5 }}>
-              <InputLabel id="RoleLabel">Role</InputLabel>
-              <Select
+      {!loading &&
+        <div className='App'>
+          <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
+            <DialogTitle>Create Project</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Please enter a title for your project.
+              </DialogContentText>
+              <TextField
+                autoFocus
                 margin="dense"
-                labelId="RoleLabel"
-                id="Role"
-                value={signUpRole}
-                label="Role"
-                onChange={handleSignUpRoleChange}
-              >
-                <MenuItem value="Closeout Department">Closeout Department</MenuItem>
-                <MenuItem value="Construction Manager">Construction Manager</MenuItem>
-                <MenuItem value="Consumer">Consumer</MenuItem>
-                <MenuItem value="Engineering/Permitting Team">Engineering/Permitting Team</MenuItem>
-                <MenuItem value="Operations Manager">Operations Manager</MenuItem>
-                <MenuItem value="Sales Representative">Sales Representative</MenuItem>
-                <MenuItem value="Site Surveyor">Site Surveyor</MenuItem>
-              </Select>
-            </FormControl>
-            {signUpRoleError && <Alert severity="error" onClose={hideSignUpRoleError}>{signUpRoleError}</Alert>}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleSignUpClose}>Cancel</Button>
-            <Button onClick={handleSignUpSubmit}>Submit</Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={logOutOpen} onClose={handleLogOutClose}>
-          <DialogTitle>Log Out</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to log out?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleLogOutClose}>Cancel</Button>
-            <Button onClick={handleLogOutSubmit}>Confirm</Button>
-          </DialogActions>
-        </Dialog>
+                id="Title"
+                label="Title"
+                type="text"
+                fullWidth
+                variant="standard"
+              />
+              {createProjectTitleError && <Alert severity="error" onClose={hideCreateProjectTitleError}>{createProjectTitleError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCreateProjectClose}>Cancel</Button>
+              <Button onClick={handleCreateProjectClose}>Submit</Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={joinProjectOpen} onClose={handleJoinProjectClose}>
+            <DialogTitle>Join Project</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Please enter the ID of the project you want to join.
+              </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="ID"
+                label="ID"
+                type="text"
+                fullWidth
+                variant="standard"
+              />
+              {joinProjectIdError && <Alert severity="error" onClose={hideJoinProjectIdError}>{joinProjectIdError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleJoinProjectClose}>Cancel</Button>
+              <Button onClick={handleJoinProjectClose}>Submit</Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={logInOpen} onClose={handleLogInClose}>
+            <DialogTitle>Log In</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="Email"
+                label="Email"
+                type="text"
+                fullWidth
+                variant="standard"
+                onChange={handleLogInEmailChange}
+              />
+              <TextField
+                autoFocus
+                margin="dense"
+                id="Password"
+                label="Password"
+                type="password"
+                fullWidth
+                variant="standard"
+                onChange={handleLogInPasswordChange}
+              />
+              {logInError && <Alert severity="error" onClose={hideLogInError}>{logInError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleLogInClose}>Cancel</Button>
+              <Button onClick={handleLogInSubmit}>Submit</Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={signUpOpen} onClose={handleSignUpClose}>
+            <DialogTitle>Sign Up</DialogTitle>
+            <DialogContent>
+              <Grid container spacing={4}>
+                <Grid item xs={6}>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    id="First Name"
+                    label="First Name"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={handleSignUpFirstNameChange}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    id="Last Name"
+                    label="Last Name"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={handleSignUpLastNameChange}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={4}>
+                <Grid item xs={6}>
+                  {signUpFirstNameError && <Alert severity="error" onClose={hideSignUpFirstNameError}>{signUpFirstNameError}</Alert>}
+                </Grid>
+                <Grid item xs={6}>
+                  {signUpLastNameError && <Alert severity="error" onClose={hideSignUpLastNameError}>{signUpLastNameError}</Alert>}
+                </Grid>
+              </Grid>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="Email"
+                label="Email"
+                type="text"
+                fullWidth
+                variant="standard"
+                onChange={handleSignUpEmailChange}
+              />
+              {signUpEmailError && <Alert severity="error" onClose={hideSignUpEmailError}>{signUpEmailError}</Alert>}
+              <Grid container spacing={4}>
+                <Grid item xs={6}>
+                  <TextField
+                    margin="dense"
+                    id="Password"
+                    label="Password"
+                    type="password"
+                    fullWidth
+                    variant="standard"
+                    onChange={handleSignUpPasswordChange}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    margin="dense"
+                    id="Confirm Password"
+                    label="Confirm Password"
+                    type="password"
+                    fullWidth
+                    variant="standard"
+                    onChange={handleSignUpConfirmPasswordChange}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={4}>
+                <Grid item xs={6}>
+                  {signUpPasswordError && <Alert severity="error" onClose={hideSignUpPasswordError}>{signUpPasswordError}</Alert>}
+                </Grid>
+                <Grid item xs={6}>
+                  {signUpConfirmPasswordError && <Alert severity="error" onClose={hideSignUpConfirmPasswordError}>{signUpConfirmPasswordError}</Alert>}
+                </Grid>
+              </Grid>
+              <FormControl fullWidth sx={{ mt: 2, mb: .5 }}>
+                <InputLabel id="RoleLabel">Role</InputLabel>
+                <Select
+                  margin="dense"
+                  labelId="RoleLabel"
+                  id="Role"
+                  value={signUpRole}
+                  label="Role"
+                  onChange={handleSignUpRoleChange}
+                >
+                  <MenuItem value="Closeout Department">Closeout Department</MenuItem>
+                  <MenuItem value="Construction Manager">Construction Manager</MenuItem>
+                  <MenuItem value="Consumer">Consumer</MenuItem>
+                  <MenuItem value="Engineering/Permitting Team">Engineering/Permitting Team</MenuItem>
+                  <MenuItem value="Operations Manager">Operations Manager</MenuItem>
+                  <MenuItem value="Sales Representative">Sales Representative</MenuItem>
+                  <MenuItem value="Site Surveyor">Site Surveyor</MenuItem>
+                </Select>
+              </FormControl>
+              {signUpRoleError && <Alert severity="error" onClose={hideSignUpRoleError}>{signUpRoleError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleSignUpClose}>Cancel</Button>
+              <Button onClick={handleSignUpSubmit}>Submit</Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={logOutOpen} onClose={handleLogOutClose}>
+            <DialogTitle>Log Out</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Are you sure you want to log out?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleLogOutClose}>Cancel</Button>
+              <Button onClick={handleLogOutSubmit}>Confirm</Button>
+            </DialogActions>
+          </Dialog>
 
-        <Box sx={{ display: 'flex' }}>
-          <CssBaseline />
-          <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-            <Toolbar>
-              <Typography variant="h6" noWrap component="div">
-                Solar Project Management Tool
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <Drawer
-            variant="permanent"
-            sx={{
-              width: drawerWidth,
-              flexShrink: 0,
-              [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' }
-            }}
-          >
-            <Toolbar />
-            <Box sx={{ overflow: 'auto' }}>
-              {user ?
-                <List>
-                  <ListItem key='Create Project' disablePadding>
-                    <ListItemButton onClick={handleCreateProjectOpen}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <AddCircleOutline color='primary' />
-                      </ListItemIcon>
-                      <ListItemText primary='Create Project' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem key='Join Project' disablePadding>
-                    <ListItemButton onClick={handleJoinProjectOpen}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <Search color='primary' />
-                      </ListItemIcon>
-                      <ListItemText primary='Join Project' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                  
-                  <Divider />
+          <Box sx={{ display: 'flex' }}>
+            <CssBaseline />
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+              <Toolbar>
+                <Typography variant="h6" noWrap component="div">
+                  Solar Project Management Tool
+                </Typography>
+              </Toolbar>
+            </AppBar>
+            <Drawer
+              variant="permanent"
+              sx={{
+                width: drawerWidth,
+                flexShrink: 0,
+                [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' }
+              }}
+            >
+              <Toolbar />
+              <Box sx={{ overflow: 'auto' }}>
+                {user ?
+                  <List>
+                    <ListItem key='Create Project' disablePadding>
+                      <ListItemButton onClick={handleCreateProjectOpen}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <AddCircleOutline color='primary' />
+                        </ListItemIcon>
+                        <ListItemText primary='Create Project' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                    <ListItem key='Join Project' disablePadding>
+                      <ListItemButton onClick={handleJoinProjectOpen}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Search color='primary' />
+                        </ListItemIcon>
+                        <ListItemText primary='Join Project' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                    
+                    <Divider />
 
-                  <ListItem key={'Project 1'} disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon sx={{ minWidth: 40 }} />
-                      <ListItemText primary={'Project 1'} />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem key={'Project 2'} disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon sx={{ minWidth: 40 }} />
-                      <ListItemText primary={'Project 2'} />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem key={'Project 3'} disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon sx={{ minWidth: 40 }} />
-                      <ListItemText primary={'Project 3'} />
-                    </ListItemButton>
-                  </ListItem>
+                    {user && user.projects &&
+                      <div>
+                        {user.projects.map((project, index) => (
+                          <ListItem key={project._id} disablePadding>
+                            <ListItemButton>
+                              <ListItemIcon sx={{ minWidth: 40 }} />
+                              <ListItemText primary={project.title} />
+                            </ListItemButton>
+                          </ListItem>
+                        ))}
+                        
+                        {user.projects.length > 0 && <Divider />}
+                      </div>
+                    }
 
-                  <Divider />
-
-                  <ListItem key='Settings' disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <SettingsOutlined color='primary' />
-                      </ListItemIcon>
-                      <ListItemText primary='Settings' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem key='Log Out' disablePadding>
-                    <ListItemButton onClick={handleLogOutOpen}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <Logout color='error' />
-                      </ListItemIcon>
-                      <ListItemText primary='Log Out' primaryTypographyProps={{ color: theme.palette.error.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                </List>
-              :
-                <List>
-                  <ListItem key='Log In' disablePadding>
-                    <ListItemButton onClick={handleLogInOpen}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <Login color='primary' />
-                      </ListItemIcon>
-                      <ListItemText primary='Log In' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem key='Sign Up' disablePadding>
-                    <ListItemButton onClick={handleSignUpOpen}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <CreateOutlined color='primary' />
-                      </ListItemIcon>
-                      <ListItemText primary='Sign Up' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                    </ListItemButton>
-                  </ListItem>
-                </List>
-              }
+                    <ListItem key='Settings' disablePadding>
+                      <ListItemButton>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <SettingsOutlined color='primary' />
+                        </ListItemIcon>
+                        <ListItemText primary='Settings' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                    <ListItem key='Log Out' disablePadding>
+                      <ListItemButton onClick={handleLogOutOpen}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Logout color='error' />
+                        </ListItemIcon>
+                        <ListItemText primary='Log Out' primaryTypographyProps={{ color: theme.palette.error.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                :
+                  <List>
+                    <ListItem key='Log In' disablePadding>
+                      <ListItemButton onClick={handleLogInOpen}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Login color='primary' />
+                        </ListItemIcon>
+                        <ListItemText primary='Log In' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                    <ListItem key='Sign Up' disablePadding>
+                      <ListItemButton onClick={handleSignUpOpen}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <CreateOutlined color='primary' />
+                        </ListItemIcon>
+                        <ListItemText primary='Sign Up' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                }
+              </Box>
+            </Drawer>
+            <Box component="main" sx={{ pt: 2, pb: 2, pl: 4, pr: 4 }}>
+              <Toolbar />
+              <div className='App-body'>
+                <Routes>
+                  <Route path='/' element={<Home />} />
+                  <Route path='/error' element={<Error />} />
+                  <Route path='*' element={<Navigate to={'/error'} replace />} />
+                </Routes>
+              </div>
             </Box>
-          </Drawer>
-          <Box component="main" sx={{ pt: 2, pb: 2, pl: 4, pr: 4 }}>
-            <Toolbar />
-            <div className='App-body'>
-              <Routes>
-                <Route path='/' element={<Home />} />
-                <Route path='/error' element={<Error />} />
-                <Route path='*' element={<Navigate to={'/error'} replace />} />
-              </Routes>
-            </div>
           </Box>
-        </Box>
-      </div>
+        </div>
+      }
     </Router>
   );
 }
