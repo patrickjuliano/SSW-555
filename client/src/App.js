@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import './App.css';
 import axios from 'axios';
 
+import Home from './components/Home';
 import Project from './components/Project';
 import Error from './components/Error';
 
@@ -20,6 +21,7 @@ const drawerWidth = 220;
 
 function App() {
   axios.defaults.withCredentials = true;
+  const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [fetchUser, setFetchUser] = useState(true);
@@ -50,13 +52,13 @@ function App() {
   const [signUpPasswordError, setSignUpPasswordError] = useState(null);
   const [signUpConfirmPasswordError, setSignUpConfirmPasswordError] = useState(null);
   const [signUpRoleError, setSignUpRoleError] = useState(null);
-
+  
   const [logOutOpen, setLogOutOpen] = useState(false);
 
   useEffect(() => {
 		async function fetchData() {
 			try {
-				const { data } = await axios.get(`http://localhost:4000/getUser`);
+				const { data } = await axios.get(`http://localhost:4000/users/getUser`);
         setUser((Object.keys(data).length == 0) ? null : data);
 			} catch (e) {
 				setUser(null);
@@ -142,10 +144,10 @@ function App() {
     if (errors == 0) {
       async function fetchData() {
         try {
-          const { data } = await axios.post(`http://localhost:4000/logIn?email=${email}&password=${password}`);
-          hideLogInError();
+          const { data } = await axios.post(`http://localhost:4000/users/logIn?email=${email}&password=${password}`);
           setUser(data);
           handleLogInClose();
+          navigate('/');
         } catch (e) {
           setUser(null);
           setLogInError('Either the email or password is invalid');
@@ -218,10 +220,11 @@ function App() {
     if (errors == 0) {
       async function fetchData() {
         try {
-          const { data } = await axios.post(`http://localhost:4000/signUp?firstName=${firstName}&lastName=${lastName}&email=${email}&password=${password}&confirmPassword=${confirmPassword}&role=${role}`);
+          const { data } = await axios.post(`http://localhost:4000/users/signUp?firstName=${firstName}&lastName=${lastName}&email=${email}&password=${password}&confirmPassword=${confirmPassword}&role=${role}`);
           if (data._id) {
             setUser(data);
             handleSignUpClose();
+            navigate('/');
           } else {
             setUser(null);
           }
@@ -242,12 +245,13 @@ function App() {
   const handleLogOutSubmit = () => {
     async function fetchData() {
         try {
-          await axios.get(`http://localhost:4000/logOut`);
+          await axios.get(`http://localhost:4000/users/logOut`);
         } catch (e) {
           
         }
         setUser(null);
         handleLogOutClose();
+        navigate('/');
       }
       fetchData();
   }
@@ -343,7 +347,7 @@ function App() {
   const theme = useTheme();
 
   return (
-    <Router>
+    <div>
       {!loading &&
         <div className='App'>
           <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
@@ -405,7 +409,6 @@ function App() {
                 onChange={handleLogInEmailChange}
               />
               <TextField
-                autoFocus
                 margin="dense"
                 id="Password"
                 label="Password"
@@ -439,7 +442,6 @@ function App() {
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
-                    autoFocus
                     margin="dense"
                     id="Last Name"
                     label="Last Name"
@@ -459,7 +461,6 @@ function App() {
                 </Grid>
               </Grid>
               <TextField
-                autoFocus
                 margin="dense"
                 id="Email"
                 label="Email"
@@ -544,7 +545,7 @@ function App() {
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
               <Toolbar>
-                <Typography variant="h6" noWrap component="div">
+                <Typography variant="h6" noWrap component="div" as={Link} to={'/'} sx={{ color: 'white', textDecoration: 'none' }}>
                   Solar Project Management Tool
                 </Typography>
               </Toolbar>
@@ -584,7 +585,7 @@ function App() {
                       <div>
                         {user.projects.map((project, index) => (
                           <ListItem key={project._id} disablePadding>
-                            <ListItemButton as={Link} to={`/projects/${project._id}`}>
+                            <ListItemButton as={Link} to={`/projects/${project._id}`} sx={{ color: 'black' }}>
                               <ListItemIcon sx={{ minWidth: 40 }} />
                               <ListItemText primary={project.title} />
                             </ListItemButton>
@@ -638,7 +639,7 @@ function App() {
               <Toolbar />
               <div className='App-body'>
                 <Routes>
-                  <Route path='/' element={<Error />} />
+                  <Route path='/' element={<Home user={user} />} />
                   <Route path='/projects/:id' element={<Project user={user} />} />
                   <Route path='/error' element={<Error />} />
                   <Route path='*' element={<Navigate to={'/error'} replace />} />
@@ -648,7 +649,7 @@ function App() {
           </Box>
         </div>
       }
-    </Router>
+    </div>
   );
 }
 

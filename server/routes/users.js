@@ -4,6 +4,11 @@ const data = require('../data');
 const userData = data.users;
 const validation = require('../validation');
 
+
+
+
+
+
 router.get('/getUser', async (req, res) => {
     try {
         if (req.session.userId) {
@@ -70,6 +75,20 @@ router.get('/logOut', async (req, res) => {
         return res.status(200).json({success: 'You have successfully logged out'});
     } else {
         return res.status(401).json({error: 'You are not logged in'});
+    }
+});
+
+router.get('/:id', async (req, res) => {
+    try {
+        req.params.id = validation.checkId(req.params.id);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const user = await userData.getUser(req.params.id);
+        return res.status(200).json(user);
+    } catch (e) {
+        return res.status(404).json({error: e});
     }
 });
 
