@@ -48,6 +48,8 @@ function App() {
 
   const [logOutOpen, setLogOutOpen] = useState(false);
   
+  axios.defaults.withCredentials = true;
+
   useEffect(() => {
 		async function fetchData() {
 			try {
@@ -213,7 +215,7 @@ function App() {
   const handleLogOutSubmit = () => {
     async function fetchData() {
         try {
-          await axios.post(`http://localhost:4000/logOut`);
+          await axios.get(`http://localhost:4000/logOut`);
         } catch (e) {
           
         }

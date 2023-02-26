@@ -2,14 +2,23 @@ const express = require('express');
 const session = require('express-session');
 const app = express();
 
-const cors = require('cors');
-app.use(cors());
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }))
 app.use(session({
     name: 'AuthCookie',
     secret: 'SecretString',
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        secure: false
+    },
     resave: false,
     saveUninitialized: true
+}));
+
+const cors = require('cors');
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
 }));
 
 const configRoutes = require('./routes');

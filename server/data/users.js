@@ -9,7 +9,7 @@ async function getUser(id) {
     id = validation.checkId(id);
 
     const userCollection = await users();
-    const user = await userCollection.findOne({_id: ObjectId(id)});
+    const user = await userCollection.findOne({_id: new ObjectId(id)});
     if (user === null) throw 'No user with that id';
 
     user._id = user._id.toString();
