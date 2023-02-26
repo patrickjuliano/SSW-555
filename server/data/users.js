@@ -37,7 +37,7 @@ async function getUserByProject(projectId) {
     projectId = validation.checkId(projectId);
 
     const userCollection = await users();
-    const user = await userCollection.findOne({ 'projects._id': ObjectId(projectId) });
+    const user = await userCollection.findOne({ 'projects._id': new ObjectId(projectId) });
     if (user === null) throw 'No project with that id';
 
     user._id = user._id.toString();

@@ -1,12 +1,14 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../App.css';
+import axios from 'axios';
 
 import Tasks from '../components/Tasks';
 import Photos from '../components/Photos';
 import Communications from '../components/Communications';
 import KPI from '../components/KPI';
 import Error from '../components/Error';
+import { useNavigate, useParams } from 'react-router-dom';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -34,8 +36,26 @@ function TabPanel(props) {
   );
 }
 
-const Project = () => {
+const Project = ({ user }) => {
+	let { id } = useParams();
+	const navigate = useNavigate();
 	const [tab, setTab] = useState(0);
+	const [project, setProject] = useState(null);
+
+	useEffect(
+		() => {
+			async function fetchData() {
+				try {
+					const { data } = await axios.get(`http://localhost:4000/projects/${id}`);
+					setProject(data);
+				} catch (e) {
+					navigate('/error');
+				}
+			}
+			fetchData();
+		},
+		[ id ]
+	);
 
 	const changeTab = (event, value) => {
 		setTab(value);
@@ -43,19 +63,24 @@ const Project = () => {
 
 	return (
 		<div>
-            <h2>Project Title</h2>
-			<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-				<Tabs value={tab} onChange={changeTab} aria-label='Project tabs'>
-					<Tab label='Tasks' />
-					<Tab label='Photos' />
-					<Tab label='Communications' />
-					<Tab label='KPI' />
-				</Tabs>
-			</Box>
-			<TabPanel value={tab} index={0}>Tasks</TabPanel>
-			<TabPanel value={tab} index={1}>Photos</TabPanel>
-			<TabPanel value={tab} index={2}>Communications</TabPanel>
-			<TabPanel value={tab} index={3}>KPI</TabPanel>
+			{project &&
+				<div>
+					<h2>{project.title}</h2>
+					<p>Owner: {user.firstName} {user.lastName} ({user.email})</p>
+					<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+						<Tabs value={tab} onChange={changeTab} aria-label='Project tabs'>
+							<Tab label='Tasks' />
+							<Tab label='Photos' />
+							<Tab label='Communications' />
+							<Tab label='KPI' />
+						</Tabs>
+					</Box>
+					<TabPanel value={tab} index={0}>Tasks</TabPanel>
+					<TabPanel value={tab} index={1}>Photos</TabPanel>
+					<TabPanel value={tab} index={2}>Communications</TabPanel>
+					<TabPanel value={tab} index={3}>KPI</TabPanel>
+				</div>
+			}
 		</div>
 	);
 };

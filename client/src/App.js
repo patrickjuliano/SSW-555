@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import './App.css';
 import axios from 'axios';
 
-import Home from './components/Project';
+import Project from './components/Project';
 import Error from './components/Error';
 
 import { Alert, AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, FormControl, Grid, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, Tab, Tabs, TextField, Toolbar, Typography } from '@mui/material';
@@ -22,9 +22,11 @@ function App() {
   axios.defaults.withCredentials = true;
 
   const [user, setUser] = useState(null);
+  const [fetchUser, setFetchUser] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [createProjectTitle, setCreateProjectTitle] = useState(null);
   const [createProjectTitleError, setCreateProjectTitleError] = useState(null);
 
   const [joinProjectOpen, setJoinProjectOpen] = useState(false);
@@ -60,19 +62,43 @@ function App() {
 				setUser(null);
 			}
       setLoading(false);
+      setFetchUser(false);
 		}
-		fetchData();
-	}, []);
+    if (fetchUser) fetchData();
+	}, [fetchUser]);
 
   const handleCreateProjectOpen = () => {
     setCreateProjectOpen(true);
   }
   const handleCreateProjectClose = () => {
     setCreateProjectOpen(false);
-    hideCreateProjectTitleError();
+    resetCreateProjectValues();
+    resetCreateProjectErrors();
   }
   const handleCreateProjectSubmit = () => {
-    
+    let errors = 0;
+
+    let title;
+    try {
+      title = checkString(createProjectTitle);
+    } catch (e) {
+      errors++;
+      setCreateProjectTitleError(e);
+    }
+
+    if (errors == 0) {
+      async function fetchData() {
+        try {
+          const { data } = await axios.post(`http://localhost:4000/projects?title=${title}`);
+          handleCreateProjectClose();
+          setFetchUser(true);
+        } catch (e) {
+          // TODO
+          alert(e);
+        }
+      }
+      fetchData();
+    }
   }
 
   const handleJoinProjectOpen = () => {
@@ -112,7 +138,7 @@ function App() {
       errors++;
       setLogInError('Either the email or password is invalid');
     }
-
+    
     if (errors == 0) {
       async function fetchData() {
         try {
@@ -193,7 +219,6 @@ function App() {
       async function fetchData() {
         try {
           const { data } = await axios.post(`http://localhost:4000/signUp?firstName=${firstName}&lastName=${lastName}&email=${email}&password=${password}&confirmPassword=${confirmPassword}&role=${role}`);
-          setUser(data._id ? data : null);
           if (data._id) {
             setUser(data);
             handleSignUpClose();
@@ -227,6 +252,10 @@ function App() {
       fetchData();
   }
 
+  const handleCreateProjectTitleChange = (event) => {
+    setCreateProjectTitle(event.target.value);
+  }
+
   const handleLogInEmailChange = (event) => {
     setLogInEmail(event.target.value);
   }
@@ -253,6 +282,12 @@ function App() {
     setSignUpRole(event.target.value);
   }
 
+  const resetCreateProjectValues = () => {
+    setCreateProjectTitle(null);
+  }
+  const resetCreateProjectErrors = () => {
+    hideCreateProjectTitleError();
+  }
   const resetLogInValues = () => {
     setLogInEmail(null);
     setLogInPassword(null);
@@ -325,12 +360,13 @@ function App() {
                 type="text"
                 fullWidth
                 variant="standard"
+                onChange={handleCreateProjectTitleChange}
               />
               {createProjectTitleError && <Alert severity="error" onClose={hideCreateProjectTitleError}>{createProjectTitleError}</Alert>}
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCreateProjectClose}>Cancel</Button>
-              <Button onClick={handleCreateProjectClose}>Submit</Button>
+              <Button onClick={handleCreateProjectSubmit}>Submit</Button>
             </DialogActions>
           </Dialog>
           <Dialog open={joinProjectOpen} onClose={handleJoinProjectClose}>
@@ -548,7 +584,7 @@ function App() {
                       <div>
                         {user.projects.map((project, index) => (
                           <ListItem key={project._id} disablePadding>
-                            <ListItemButton>
+                            <ListItemButton as={Link} to={`/projects/${project._id}`}>
                               <ListItemIcon sx={{ minWidth: 40 }} />
                               <ListItemText primary={project.title} />
                             </ListItemButton>
@@ -602,7 +638,8 @@ function App() {
               <Toolbar />
               <div className='App-body'>
                 <Routes>
-                  <Route path='/' element={<Home />} />
+                  <Route path='/' element={<Error />} />
+                  <Route path='/projects/:id' element={<Project user={user} />} />
                   <Route path='/error' element={<Error />} />
                   <Route path='*' element={<Navigate to={'/error'} replace />} />
                 </Routes>

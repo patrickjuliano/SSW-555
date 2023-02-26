@@ -37,14 +37,6 @@ async function createProject(userId, title) {
 
     newProject._id = newProject._id.toString();
     return newProject;
-
-
-    // return userCollection
-    //     .updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: newProject } })
-    //     .then(async function () {
-    //         newProject._id = newProject._id.toString();
-    //         return newProject;
-    //     });
 }
 
 async function removeProject(projectId) {
@@ -54,7 +46,7 @@ async function removeProject(projectId) {
     const user = await userData.getUserByProject(projectId);
 
     return userCollection
-        .updateOne({ _id: ObjectId(user._id) }, { $pull: { projects: { _id: ObjectId(projectId) } } })
+        .updateOne({ _id: new ObjectId(user._id) }, { $pull: { projects: { _id: new ObjectId(projectId) } } })
         .then(async function () {
             const updatedUser = await userData.getUser(user._id);
             return updatedUser;
