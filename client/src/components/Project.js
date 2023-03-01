@@ -36,7 +36,7 @@ function TabPanel(props) {
   );
 }
 
-const Project = ({ user }) => {
+const Project = ({ user, projects }) => {
   	axios.defaults.withCredentials = true;
 	let { id } = useParams();
 	const navigate = useNavigate();
@@ -47,16 +47,20 @@ const Project = ({ user }) => {
 	useEffect(
 		() => {
 			async function fetchData() {
-				let hasPermission = false;
-				if (user) {
-					for (const project of user.projects) {
-						if (project._id === id) {
-							hasPermission = true;
-							break;
+				try {
+					let hasPermission = false;
+					if (user && projects) {
+						for (const project of projects) {
+							if (project._id === id) {
+								hasPermission = true;
+								break;
+							}
 						}
 					}
+					if (!hasPermission) throw 'You do not have permission to view this page.';
+				} catch (e) {
+					navigate('/error', { state: { error: e } });
 				}
-				if (!hasPermission) navigate('/error', { state: { error: 'You do not have permission to view this page.' } });
 
 				try {
 					var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
@@ -71,7 +75,7 @@ const Project = ({ user }) => {
 			}
 			fetchData();
 		},
-		[ id ]
+		[ id, user, projects ]
 	);
 
 	const changeTab = (event, value) => {

@@ -4,12 +4,7 @@ const data = require('../data');
 const userData = data.users;
 const validation = require('../validation');
 
-
-
-
-
-
-router.get('/getUser', async (req, res) => {
+router.get('/current', async (req, res) => {
     try {
         if (req.session.userId) {
             const user = await userData.getUser(req.session.userId);
@@ -64,8 +59,8 @@ router.post('/signUp', async (req, res) => {
             res.status(500).json({error: 'Internal server error'});
         }
     } catch (e) {
-        console.log(e);
-        res.status(400).json({error: e});
+        let emailError = e === 'Email is in use';
+        res.status(400).json({error: e, emailError: emailError});
     }
 });
 

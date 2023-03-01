@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, json } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import './App.css';
 import axios from 'axios';
@@ -24,8 +24,9 @@ function App() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [fetchUser, setFetchUser] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState(null);
+  const [fetchFlag, setFetchFlag] = useState(true);
+  const [loading, setLoading] = useState({ user: true, projects: true});
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createProjectTitle, setCreateProjectTitle] = useState(null);
@@ -57,17 +58,55 @@ function App() {
 
   useEffect(() => {
 		async function fetchData() {
-			try {
-				const { data } = await axios.get(`http://localhost:4000/users/getUser`);
-        setUser((Object.keys(data).length == 0) ? null : data);
-			} catch (e) {
-				setUser(null);
-			}
-      setLoading(false);
-      setFetchUser(false);
+      if (fetchFlag) {
+        try {
+          const { data } = await axios.get(`http://localhost:4000/users/current`);
+          if (Object.keys(data).length == 0) throw 'User is not logged in';
+          setUser(data);
+        } catch (e) {
+          setUser(null);
+        }
+        // setLoading({ user: false, projects: true })
+      }
 		}
-    if (fetchUser) fetchData();
-	}, [fetchUser]);
+    fetchData();
+	}, [fetchFlag]);
+
+  useEffect(() => {
+		async function fetchData() {
+      if (!loading.user) {
+        try {
+          if (!user) throw 'No user found';
+          const { data } = await axios.get(`http://localhost:4000/projects/users/${user._id}`);
+          if (Object.keys(data).length == 0) throw 'No projects found';
+          setProjects(data.projects);
+        } catch (e) {
+          setProjects(null);
+        }
+        setFetchFlag(false);
+        // setLoading({ user: false, projects: false });
+      }
+		}
+    fetchData();
+	}, [user]);
+
+  // useEffect(() => {
+	// 	async function fetchData() {
+  //     try {
+  //       alert(1);
+  //       var { data } = await axios.get(`http://localhost:4000/users/current`);
+  //       if (Object.keys(data).length == 0) throw 'User is not logged in';
+  //       setUser(data);
+	// 			var { data } = await axios.get(`http://localhost:4000/projects/users/${user._id}`);
+  //       setProjects(data);
+	// 		} catch (e) {
+	// 			setUser(null);
+  //       setProjects([]);
+	// 		}
+  //     setLoading(false);
+	// 	}
+  //   fetchData();
+	// }, [user]);
 
   const handleCreateProjectOpen = () => {
     setCreateProjectOpen(true);
@@ -93,10 +132,9 @@ function App() {
         try {
           const { data } = await axios.post(`http://localhost:4000/projects?title=${title}`);
           handleCreateProjectClose();
-          setFetchUser(true);
+          setFetchFlag(true);
         } catch (e) {
           // TODO
-          alert(e);
         }
       }
       fetchData();
@@ -229,6 +267,7 @@ function App() {
             setUser(null);
           }
         } catch (e) {
+          if (e.response && 'emailError' in e.response.data) setSignUpEmailError(e.response.data.error);
           setUser(null);
         }
       }
@@ -348,7 +387,7 @@ function App() {
 
   return (
     <div>
-      {!loading &&
+      {
         <div className='App'>
           <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
             <DialogTitle>Create Project</DialogTitle>
@@ -581,9 +620,9 @@ function App() {
                     
                     <Divider />
 
-                    {user && user.projects &&
+                    {user && projects &&
                       <div>
-                        {user.projects.map((project, index) => (
+                        {projects.map((project, index) => (
                           <ListItem key={project._id} disablePadding>
                             <ListItemButton as={Link} to={`/projects/${project._id}`} sx={{ color: 'black' }}>
                               <ListItemIcon sx={{ minWidth: 40 }} />
@@ -640,7 +679,7 @@ function App() {
               <div className='App-body'>
                 <Routes>
                   <Route path='/' element={<Home user={user} />} />
-                  <Route path='/projects/:id' element={<Project user={user} />} />
+                  <Route path='/projects/:id' element={<Project user={user} projects={projects} />} />
                   <Route path='/error' element={<Error />} />
                   <Route path='*' element={<Navigate to={'/error'} replace />} />
                 </Routes>

@@ -13,8 +13,8 @@ async function getUser(id) {
     if (user === null) throw 'No user with that id';
 
     user._id = user._id.toString();
-    for (const project of user.projects) {
-        project._id = project._id.toString();
+    for (let i = 0; i < user.projects.length; i++) {
+        user.projects[i] = user.projects[i].toString();
     }
     return user;
 }
@@ -27,25 +27,25 @@ async function getUserByEmail(email) {
     if (user === null) throw 'No user with that email';
 
     user._id = user._id.toString();
-    for (const project of user.projects) {
-        project._id = project._id.toString();
+    for (let i = 0; i < user.projects.length; i++) {
+        user.projects[i] = user.projects[i].toString();
     }
     return user;
 }
 
-async function getUserByProject(projectId) {
-    projectId = validation.checkId(projectId);
+// async function getUserByProject(projectId) {
+//     projectId = validation.checkId(projectId);
 
-    const userCollection = await users();
-    const user = await userCollection.findOne({ 'projects._id': new ObjectId(projectId) });
-    if (user === null) throw 'No project with that id';
+//     const userCollection = await users();
+//     const user = await userCollection.findOne({ 'projects': new ObjectId(projectId) });
+//     if (user === null) throw 'No project with that id';
 
-    user._id = user._id.toString();
-    for (const project of user.projects) {
-        project._id = project._id.toString();
-    }
-    return user;
-}
+//     user._id = user._id.toString();
+//     for (let i = 0; i < user.projects.length; i++) {
+    //     user.projects[i] = user.projects[i].toString();
+    // }
+//     return user;
+// }
 
 async function createUser(firstName, lastName, email, password, confirmPassword, role) {
     firstName = validation.checkString(firstName);
@@ -55,12 +55,13 @@ async function createUser(firstName, lastName, email, password, confirmPassword,
     confirmPassword = validation.comparePasswords(password, confirmPassword);
     role = validation.checkString(role);
     
+    let existingUser;
     try {
-        await getUserByEmail(email);
-        throw 'Email is in use';
+        existingUser = await getUserByEmail(email);
     } catch (e) {
         // Email is not in use
     }
+    if (existingUser) throw 'Email is in use';
 
     const hash = await bcrypt.hash(password, saltRounds);
     const userCollection = await users();
@@ -96,7 +97,7 @@ async function logIn(email, password) {
 module.exports = {
     getUser,
     getUserByEmail,
-    getUserByProject,
+    // getUserByProject,
     createUser,
     logIn
 }
