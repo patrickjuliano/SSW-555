@@ -23,7 +23,7 @@ function App() {
   axios.defaults.withCredentials = true;
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined);
   const [projects, setProjects] = useState(null);
   const [fetchFlag, setFetchFlag] = useState(true);
   const [loading, setLoading] = useState(true);
