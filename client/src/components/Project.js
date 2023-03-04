@@ -11,7 +11,7 @@ import Error from '../components/Error';
 import { useNavigate, useParams } from 'react-router-dom';
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, project, refetch, ...other } = props;
 
   return (
     <div
@@ -25,7 +25,7 @@ function TabPanel(props) {
         <Box sx={{ pt: 1, pb: 1, pl: 3, pr: 3 }}>
           {
 		  	children == 'Tasks' ? <Tasks /> :
-			children == 'Photos' ? <Photos /> :
+			children == 'Photos' ? <Photos project={project} refetch={refetch} /> :
 			children == 'Communications' ? <Communications /> :
 			children == 'KPI' ? <KPI /> :
 			'Not found'
@@ -43,40 +43,103 @@ const Project = ({ user, projects }) => {
 	const [tab, setTab] = useState(0);
 	const [project, setProject] = useState(null);
 	const [owner, setOwner] = useState(null);
+	const [fetchFlag, setFetchFlag] = useState(false);
+
+	// async function fetchData() {
+	// 	try {
+	// 		var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
+	// 		const projectData = data;
+	// 		setProject(projectData);
+	// 		var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
+	// 		const ownerData = data;
+	// 		setOwner(ownerData);
+	// 	} catch (e) {
+	// 		alert(1);
+	// 		navigate('/error');
+	// 	}
+	// 	alert(2);
+	// 	try {
+	// 		let hasPermission = false;
+	// 		if (user && projects) {
+	// 			for (const project of projects) {
+	// 				if (project._id === id) {
+	// 					hasPermission = true;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 		if (!hasPermission) throw 'You do not have permission to view this page.';
+	// 	} catch (e) {
+	// 		alert(e);
+	// 		navigate('/error', { state: { error: e } });
+	// 	}
+	// }
+
+	useEffect(() => {
+		async function fetchData() {
+			try {
+				var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
+				const projectData = data;
+				setProject(projectData);
+				var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
+				const ownerData = data;
+				setOwner(ownerData);
+			} catch (e) {
+				navigate('/error');
+			}
+			try {
+				let hasPermission = false;
+				if (user && projects) {
+					for (const project of projects) {
+						if (project._id === id) {
+							hasPermission = true;
+							break;
+						}
+					}
+				}
+				if (!hasPermission) throw 'You do not have permission to view this page.';
+			} catch (e) {
+				navigate('/error', { state: { error: e } });
+			}
+		}
+		fetchData()
+	}, [ id, user, projects ]);
 
 	useEffect(
 		() => {
-			async function fetchData() {
-				try {
-					let hasPermission = false;
-					if (user && projects) {
-						for (const project of projects) {
-							if (project._id === id) {
-								hasPermission = true;
-								break;
+			if (fetchFlag) {
+				async function fetchData() {
+					try {
+						var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
+						const projectData = data;
+						setProject(projectData);
+						var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
+						const ownerData = data;
+						setOwner(ownerData);
+					} catch (e) {
+						navigate('/error');
+					}
+					try {
+						let hasPermission = false;
+						if (user && projects) {
+							for (const project of projects) {
+								if (project._id === id) {
+									hasPermission = true;
+									break;
+								}
 							}
 						}
+						if (!hasPermission) throw 'You do not have permission to view this page.';
+					} catch (e) {
+						navigate('/error', { state: { error: e } });
 					}
-					if (!hasPermission) throw 'You do not have permission to view this page.';
-				} catch (e) {
-					navigate('/error', { state: { error: e } });
+					setFetchFlag(false);
 				}
-
-				try {
-					var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
-					const projectData = data;
-					setProject(projectData);
-					var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
-					const ownerData = data;
-					setOwner(ownerData);
-				} catch (e) {
-					navigate('/error');
-				}
+				fetchData()
 			}
-			fetchData();
 		},
-		[ id, user, projects ]
-	);
+		[ fetchFlag ]
+	)
 
 	const changeTab = (event, value) => {
 		setTab(value);
@@ -96,10 +159,10 @@ const Project = ({ user, projects }) => {
 							<Tab label='KPI' />
 						</Tabs>
 					</Box>
-					<TabPanel value={tab} index={0}>Tasks</TabPanel>
-					<TabPanel value={tab} index={1}>Photos</TabPanel>
-					<TabPanel value={tab} index={2}>Communications</TabPanel>
-					<TabPanel value={tab} index={3}>KPI</TabPanel>
+					<TabPanel value={tab} index={0} project={project} refetch={() => setFetchFlag(true)}>Tasks</TabPanel>
+					<TabPanel value={tab} index={1} project={project} refetch={() => setFetchFlag(true)}>Photos</TabPanel>
+					<TabPanel value={tab} index={2} project={project} refetch={() => setFetchFlag(true)}>Communications</TabPanel>
+					<TabPanel value={tab} index={3} project={project} refetch={() => setFetchFlag(true)}>KPI</TabPanel>
 				</div>
 			}
 		</div>

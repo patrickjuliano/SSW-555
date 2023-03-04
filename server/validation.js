@@ -1,6 +1,21 @@
 const { ObjectId } = require('mongodb');
 const emailValidator = require('email-validator');
 
+function checkFile(file) {
+    if (!(file instanceof File)) throw 'You must provide a valid file';
+    return file;
+}
+
+function checkBoolean(bool) {
+    if (typeof bool === 'string') {
+        bool = bool.toLowerCase();
+        if (bool === 'true') bool = true;
+        else if (bool === 'false') bool = false;
+    }
+    if (typeof bool !== 'boolean') throw 'You must provide a valid boolean';
+    return bool;
+}
+
 function checkString(string) {
     if (!string) throw 'You must provide a string';
     if (typeof string !== 'string') throw 'You must provide a valid string';
@@ -54,6 +69,8 @@ function comparePasswords(password, confirmPassword) {
 }
 
 module.exports = {
+    checkFile,
+    checkBoolean,
     checkString,
     checkNumber,
     checkInteger,

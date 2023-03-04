@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate, json } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import './App.css';
@@ -26,7 +26,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState(null);
   const [fetchFlag, setFetchFlag] = useState(true);
-  const [loading, setLoading] = useState({ user: true, projects: true});
+  const [loading, setLoading] = useState(true);
+  const loadedUser = useRef(false);
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createProjectTitle, setCreateProjectTitle] = useState(null);
@@ -67,6 +68,7 @@ function App() {
           setUser(null);
         }
         // setLoading({ user: false, projects: true })
+        loadedUser.current = true;
       }
 		}
     fetchData();
@@ -74,39 +76,20 @@ function App() {
 
   useEffect(() => {
 		async function fetchData() {
-      if (!loading.user) {
-        try {
-          if (!user) throw 'No user found';
-          const { data } = await axios.get(`http://localhost:4000/projects/users/${user._id}`);
-          if (Object.keys(data).length == 0) throw 'No projects found';
-          setProjects(data.projects);
-        } catch (e) {
-          setProjects(null);
-        }
-        setFetchFlag(false);
-        // setLoading({ user: false, projects: false });
+      if (!loadedUser.current) return;
+      try {
+        if (!user) throw 'No user found';
+        const { data } = await axios.get(`http://localhost:4000/projects/users/${user._id}`);
+        if (Object.keys(data).length == 0) throw 'No projects found';
+        setProjects(data.projects);
+      } catch (e) {
+        setProjects(null);
       }
+      setFetchFlag(false);
+      setLoading(false);
 		}
     fetchData();
 	}, [user]);
-
-  // useEffect(() => {
-	// 	async function fetchData() {
-  //     try {
-  //       alert(1);
-  //       var { data } = await axios.get(`http://localhost:4000/users/current`);
-  //       if (Object.keys(data).length == 0) throw 'User is not logged in';
-  //       setUser(data);
-	// 			var { data } = await axios.get(`http://localhost:4000/projects/users/${user._id}`);
-  //       setProjects(data);
-	// 		} catch (e) {
-	// 			setUser(null);
-  //       setProjects([]);
-	// 		}
-  //     setLoading(false);
-	// 	}
-  //   fetchData();
-	// }, [user]);
 
   const handleCreateProjectOpen = () => {
     setCreateProjectOpen(true);
@@ -387,7 +370,7 @@ function App() {
 
   return (
     <div>
-      {
+      {!loading &&
         <div className='App'>
           <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
             <DialogTitle>Create Project</DialogTitle>

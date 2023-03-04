@@ -13,6 +13,9 @@ async function getProject(projectId) {
     if (project === null) throw 'No user with that id';
 
     project._id = project._id.toString();
+    for (let i = 0; i < project.photos.length; i++) {
+        project.photos[i]._id = project.photos[i]._id.toString();
+    }
     return project;
 }
 
@@ -41,7 +44,8 @@ async function createProject(userId, title) {
     const newProject = {
         _id: projectId,
         title: title,
-        owner: new ObjectId(user._id)
+        owner: new ObjectId(user._id),
+        photos: []
     }
     
     const insertInfo = await projectCollection.insertOne(newProject);

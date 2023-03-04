@@ -1,7 +1,9 @@
+const photoRoutes = require('./photos');
 const projectRoutes = require('./projects');
 const userRoutes = require('./users');
 
 const constructorMethod = (app) => {
+  app.use('/photos', photoRoutes);
   app.use('/projects', projectRoutes);
   app.use('/users', userRoutes);
 
