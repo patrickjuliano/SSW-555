@@ -25,6 +25,46 @@ const Tasks = ({ project, refetch }) => {
 		}
 	}
 
+	const stages = ["Backlog", "To Do", "In Progress", "Done"]
+
+	const getTasksAtStage = (stage) => {
+		const tasks = [];
+		for (let i = 0; i < project.tasks.length; i++) {
+			const task = project.tasks[i];
+			if (task.stage === stage) tasks.push(task);
+		}
+
+		return (
+			<Grid item xs={3}>
+				<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7' }}>
+					<Typography variant="h6" component="h4" sx={{ pb: 1 }}>{stages[stage]}</Typography>
+					<Grid container spacing={1} direction="column" justifyContent="flex-start" alignItems="stretch">
+						{tasks.map((task, index) => (
+							<Grid item>
+								<Card variant="outlined">
+									<CardContent>
+										<Typography variant="h6" component="div">{task.title}</Typography>
+										<Typography variant="body2">{task.description}</Typography>
+									</CardContent>
+								</Card>
+							</Grid>
+						))}
+					</Grid>
+				</Card>
+			</Grid>
+		);
+	}
+
+	const createTaskColumns = () => {
+		return (
+			<Grid container spacing={2}>
+				{stages.map((stage, index) => (
+					getTasksAtStage(index)
+				))}
+			</Grid>
+		);
+	}
+
 	return (
 		<div>
 			<div style={{ display: 'flex', alignItems: 'center', columnGap: 12 }}>
@@ -40,7 +80,9 @@ const Tasks = ({ project, refetch }) => {
 				onSubmit={deleteTask}
 			/>
 
-			<Grid container spacing={2}>
+			{project.tasks && createTaskColumns()}
+
+			{/* <Grid container spacing={2}>
 				<Grid item xs={3}>
 					<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7' }}>
 						<Typography variant="h6" component="h4" sx={{ pb: 1 }}>Backlog</Typography>
@@ -228,7 +270,7 @@ const Tasks = ({ project, refetch }) => {
 
 
 				
-			</Grid>
+			</Grid> */}
 			
 			
 		</div>

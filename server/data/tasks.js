@@ -37,7 +37,8 @@ async function createTask(projectId, title, description) {
     let newTask = {
         _id: taskId,
         title: title,
-        description: description
+        description: description,
+        stage: 0
     }
 
     const updateInfo = await projectCollection.updateOne({ _id: new ObjectId(projectId) }, { $addToSet: { tasks: newTask } });
