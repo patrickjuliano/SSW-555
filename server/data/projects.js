@@ -16,6 +16,9 @@ async function getProject(projectId) {
     for (let i = 0; i < project.photos.length; i++) {
         project.photos[i]._id = project.photos[i]._id.toString();
     }
+    for (let i = 0; i < project.tasks.length; i++) {
+        project.tasks[i]._id = project.tasks[i]._id.toString();
+    }
     return project;
 }
 
@@ -45,6 +48,7 @@ async function createProject(userId, title) {
         _id: projectId,
         title: title,
         owner: new ObjectId(user._id),
+        tasks: [],
         photos: []
     }
     
