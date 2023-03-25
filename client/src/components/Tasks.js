@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import '../App.css';
 import Confirmation from './Confirmation';
 import CreateTask from './CreateTask';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 const Tasks = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
@@ -18,12 +20,24 @@ const Tasks = ({ project, refetch }) => {
 		try {
 			const { data } = await axios.delete(`http://localhost:4000/tasks/${deleteTaskId}`);
 			refetch();
-			setDeleteTaskId(null);
+		} catch (e) {
+			// TODO
+			alert(e);
+		}
+		setDeleteTaskId(null);
+	}
+
+	async function moveTask(taskId, forward) {
+		try {
+			const { data } = await axios.patch(`http://localhost:4000/tasks/${taskId}/move/${forward}`);
+			refetch();
 		} catch (e) {
 			// TODO
 			alert(e);
 		}
 	}
+	async function moveTaskBackward(taskId) { await moveTask(taskId, false); }
+	async function moveTaskForward(taskId) { await moveTask(taskId, true); }
 
 	const stages = ["Backlog", "To Do", "In Progress", "Done"]
 
@@ -46,6 +60,18 @@ const Tasks = ({ project, refetch }) => {
 										<Typography variant="h6" component="div">{task.title}</Typography>
 										<Typography variant="body2">{task.description}</Typography>
 									</CardContent>
+									<CardActions disableSpacing>
+										{stage !== 0 &&
+											<IconButton onClick={() => moveTaskBackward(task._id)} component="label" aria-label="Move task to previous stage">
+												<ArrowBackIcon />
+											</IconButton>
+										}
+										{stage !== stages.length - 1 &&
+											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Move task to next stage" sx={{ marginLeft: 'auto' }}>
+												<ArrowForwardIcon />
+											</IconButton>
+										}
+									</CardActions>
 								</Card>
 							</Grid>
 						))}
@@ -81,198 +107,6 @@ const Tasks = ({ project, refetch }) => {
 			/>
 
 			{project.tasks && createTaskColumns()}
-
-			{/* <Grid container spacing={2}>
-				<Grid item xs={3}>
-					<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7' }}>
-						<Typography variant="h6" component="h4" sx={{ pb: 1 }}>Backlog</Typography>
-						<Grid container spacing={1} direction="column" justifyContent="flex-start" alignItems="stretch">
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-						</Grid>
-					</Card>
-				</Grid>
-
-				<Grid item xs={3}>
-					<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7'  }}>
-						<Typography variant="h6" component="h4" sx={{ pb: 1 }}>To Do</Typography>
-						<Grid container spacing={1} direction="column" justifyContent="flex-start" alignItems="stretch">
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-						</Grid>
-					</Card>
-				</Grid>
-
-<Grid item xs={3}>
-					<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7'  }}>
-						<Typography variant="h6" component="h4" sx={{ pb: 1 }}>In Progress</Typography>
-						<Grid container spacing={1} direction="column" justifyContent="flex-start" alignItems="stretch">
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-						</Grid>
-					</Card>
-				</Grid>
-
-<Grid item xs={3}>
-					<Card variant="outlined" sx={{ p: 2, backgroundColor: '#F4F5F7'  }}>
-						<Typography variant="h6" component="h4" sx={{ pb: 1 }}>Done</Typography>
-						<Grid container spacing={1} direction="column" justifyContent="flex-start" alignItems="stretch">
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-							<Grid item>
-								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">Task</Typography>
-										<Typography variant="body2">This is a task!</Typography>
-									</CardContent>
-								</Card>
-							</Grid>
-						</Grid>
-					</Card>
-				</Grid>
-
-
-
-				
-			</Grid> */}
-			
-			
 		</div>
 	);
 };

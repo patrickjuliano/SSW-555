@@ -60,9 +60,31 @@ async function removeTask(taskId) {
     return updatedProject;
 }
 
+async function moveTask(taskId, forward) {
+    taskId = validation.checkId(taskId);
+    forward = validation.checkBoolean(forward);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
+    if (project === null) throw 'No task with that id';
+
+    const task = await getTask(taskId);
+    const newStage = forward ? Math.min(task.stage + 1, 3) : Math.max(task.stage - 1, 0);
+
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].stage': newStage } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    const updatedTask = await getTask(taskId);
+    return updatedTask;
+}
+
 module.exports = {
     getTask,
     getAllTasks,
     createTask,
-    removeTask
+    removeTask,
+    moveTask
 }
