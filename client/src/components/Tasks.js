@@ -7,6 +7,8 @@ import Confirmation from './Confirmation';
 import CreateTask from './CreateTask';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Delete from '@mui/icons-material/Delete';
+import Settings from '@mui/icons-material/Settings';
 
 const Tasks = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
@@ -19,12 +21,12 @@ const Tasks = ({ project, refetch }) => {
 	async function deleteTask() {
 		try {
 			const { data } = await axios.delete(`http://localhost:4000/tasks/${deleteTaskId}`);
+			setDeleteTaskId(null);
 			refetch();
 		} catch (e) {
 			// TODO
 			alert(e);
 		}
-		setDeleteTaskId(null);
 	}
 
 	async function moveTask(taskId, forward) {
@@ -38,6 +40,10 @@ const Tasks = ({ project, refetch }) => {
 	}
 	async function moveTaskBackward(taskId) { await moveTask(taskId, false); }
 	async function moveTaskForward(taskId) { await moveTask(taskId, true); }
+
+	async function editTask(taskId) {
+		// TODO
+	}
 
 	const stages = ["Backlog", "To Do", "In Progress", "Done"]
 
@@ -67,8 +73,18 @@ const Tasks = ({ project, refetch }) => {
 											</IconButton>
 										}
 										{stage !== stages.length - 1 &&
-											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Move task to next stage" sx={{ marginLeft: 'auto' }}>
+											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Move task to next stage" /*sx={{ marginLeft: 'auto' }}*/>
 												<ArrowForwardIcon />
+											</IconButton>
+										}
+										{true &&
+											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
+												<Settings />
+											</IconButton>
+										}
+										{true &&
+											<IconButton onClick={() => setDeleteTaskId(task._id)} component="label" aria-label="Delete task">
+												<Delete />
 											</IconButton>
 										}
 									</CardActions>
