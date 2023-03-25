@@ -73,18 +73,19 @@ const CreateTask = ({ project, refetch, open, onClose }) => {
 					label="Title"
 					type="text"
 					variant="standard"
+					fullWidth
 					onChange={onTitleChange}
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
 
 				<DialogContentText>Please enter a description for the task.</DialogContentText>
 				<TextField
-					autoFocus
 					margin="dense"
 					id="Description"
 					label="Description"
 					type="text"
 					variant="standard"
+					fullWidth
 					onChange={onDescriptionChange}
 				/>
 				{descriptionError && <Alert severity="error" onClose={() => setDescriptionError(null)}>{descriptionError}</Alert>}

@@ -657,7 +657,7 @@ function App() {
                 }
               </Box>
             </Drawer>
-            <Box component="main" sx={{ pt: 2, pb: 2, pl: 4, pr: 4 }}>
+            <Box component="main" sx={{ pt: 2, pb: 2, pl: 4, pr: 4, width: '100%' }}>
               <Toolbar />
               <div className='App-body'>
                 <Routes>

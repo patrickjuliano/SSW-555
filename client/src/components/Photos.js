@@ -14,8 +14,6 @@ import CreatePhoto from './CreatePhoto';
 const Photos = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
 
-	const [p, setP] = useState(null);
-
 	const [createPhotoOpen, setCreatePhotoOpen] = useState(false);
 	const openCreatePhoto = () => setCreatePhotoOpen(true);
 	const closeCreatePhoto = () => setCreatePhotoOpen(false);

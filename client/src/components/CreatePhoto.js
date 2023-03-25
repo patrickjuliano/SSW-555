@@ -72,6 +72,7 @@ const CreatePhoto = ({ project, refetch, open, onClose }) => {
 					label="Title"
 					type="text"
 					variant="standard"
+					fullWidth
 					onChange={onTitleChange}
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}

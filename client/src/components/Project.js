@@ -24,7 +24,7 @@ function TabPanel(props) {
       {value === index && (
         <Box sx={{ pt: 1, pb: 1, pl: 3, pr: 3 }}>
           {
-		  	children == 'Tasks' ? <Tasks /> :
+		  	children == 'Tasks' ? <Tasks project={project} refetch={refetch} /> :
 			children == 'Photos' ? <Photos project={project} refetch={refetch} /> :
 			children == 'Communications' ? <Communications /> :
 			children == 'KPI' ? <KPI /> :
