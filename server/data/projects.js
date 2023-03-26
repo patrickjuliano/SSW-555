@@ -10,7 +10,7 @@ async function getProject(projectId) {
 
     const projectCollection = await projects();
     const project = await projectCollection.findOne({_id: new ObjectId(projectId)});
-    if (project === null) throw 'No user with that id';
+    if (project === null) throw 'No project with that id';
 
     project._id = project._id.toString();
     for (let i = 0; i < project.photos.length; i++) {
@@ -85,6 +85,17 @@ async function joinProject(userId, projectId) {
     return project;
 }
 
+async function getUsersInProject(projectId) {
+    projectId = validation.checkId(projectId);
+    
+    const project = await getProject(projectId);
+    
+    const allUsers = await userData.getAllUsers();
+    const users = allUsers.filter(user => user.projects.includes(projectId));
+    
+    return users;
+}
+
 // async function removeProject(projectId) {
 //     projectId = validation.checkId(projectId);
 
@@ -104,5 +115,6 @@ module.exports = {
     getAllProjects,
     createProject,
     joinProject,
+    getUsersInProject
     // removeProject
 }

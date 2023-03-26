@@ -19,6 +19,20 @@ async function getUser(id) {
     return user;
 }
 
+async function getAllUsers() {
+    const userCollection = await users();
+    const allUsers = await userCollection.find({}).toArray();
+    if (!allUsers) throw 'Could not get all users';
+
+    for (let i = 0; i < allUsers.length; i++) {
+        allUsers[i]._id = allUsers[i]._id.toString();
+        for (let j = 0; j < allUsers[i].projects.length; j++) {
+            allUsers[i].projects[j] = allUsers[i].projects[j].toString();
+        }
+    }
+    return allUsers;
+}
+
 async function getUserByEmail(email) {
     email = validation.checkEmail(email);
 
@@ -32,20 +46,6 @@ async function getUserByEmail(email) {
     }
     return user;
 }
-
-// async function getUserByProject(projectId) {
-//     projectId = validation.checkId(projectId);
-
-//     const userCollection = await users();
-//     const user = await userCollection.findOne({ 'projects': new ObjectId(projectId) });
-//     if (user === null) throw 'No project with that id';
-
-//     user._id = user._id.toString();
-//     for (let i = 0; i < user.projects.length; i++) {
-    //     user.projects[i] = user.projects[i].toString();
-    // }
-//     return user;
-// }
 
 async function createUser(firstName, lastName, email, password, confirmPassword, role) {
     firstName = validation.checkString(firstName);
@@ -96,8 +96,8 @@ async function logIn(email, password) {
 
 module.exports = {
     getUser,
+    getAllUsers,
     getUserByEmail,
-    // getUserByProject,
     createUser,
     logIn
 }

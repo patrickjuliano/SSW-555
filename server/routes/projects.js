@@ -32,6 +32,20 @@ router.get('/users/:id', async (req, res) => {
     }
 });
 
+router.get('/:id/users', async (req, res) => {
+    try {
+        req.params.id = validation.checkId(req.params.id);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const users = await projectData.getUsersInProject(req.params.id);
+        return res.status(200).json(users);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
 router.post('/', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
     try {

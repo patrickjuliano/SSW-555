@@ -10,7 +10,7 @@ async function getTask(taskId) {
     taskId = validation.checkId(taskId);
 
     const projectCollection = await projects();
-    const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
+    const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId) });
     if (project === null) throw 'No task with that id';
 
     const task = project.tasks.find(task => task._id.toString() === taskId);
