@@ -1,8 +1,15 @@
-import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, TextField } from '@mui/material';
+import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, List, ListItem, ListItemButton, ListItemIcon, TextField } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import '../App.css';
 import { checkBoolean, checkString } from '../validation';
+
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	axios.defaults.withCredentials = true;
@@ -78,7 +85,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	}
 
 	return (
-		<Dialog open={fullyOpen} onClose={closeTask}>
+		<Dialog open={fullyOpen} onClose={closeTask} fullWidth maxWidth="sm">
 			<DialogTitle>{task ? "Edit" : "Create"} Task</DialogTitle>
 			<DialogContent>
 				<DialogContentText>Please enter a title for the task.</DialogContentText>
@@ -95,7 +102,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
 
-				<DialogContentText>Please enter a description for the task.</DialogContentText>
+				<DialogContentText mt={1}>Please enter a description for the task.</DialogContentText>
 				<TextField
 					margin="dense"
 					id="Description"
@@ -107,6 +114,46 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 					onChange={onDescriptionChange}
 				/>
 				{descriptionError && <Alert severity="error" onClose={() => setDescriptionError(null)}>{descriptionError}</Alert>}
+				
+				{/* <DialogContentText mt={1}>Please enter a due date for the task.</DialogContentText>
+				<LocalizationProvider dateAdapter={AdapterDayjs}>
+					<DatePicker />
+				</LocalizationProvider> */}
+
+				<DialogContentText mt={1}>If applicable, enter any subtasks associated with this task.</DialogContentText>
+				<List disablePadding>
+					<ListItem disablePadding>
+						<ListItemButton sx={{ p: 1 }}>
+							<ListItemIcon>
+								<RemoveCircleIcon />
+							</ListItemIcon>
+						</ListItemButton>
+						<TextField
+							margin="dense"
+							label="Subtask"
+							type="text"
+							variant="standard"
+							fullWidth
+						/>
+					</ListItem>
+
+					<ListItem disablePadding>
+						<ListItemButton sx={{ p: 1 }}>
+							<ListItemIcon>
+								<AddCircleIcon />
+							</ListItemIcon>
+						</ListItemButton>
+						<TextField
+							margin="dense"
+							label="Subtask"
+							type="text"
+							variant="standard"
+							fullWidth
+							disabled
+						/>
+					</ListItem>
+				</List>
+				
 			</DialogContent>
 			<DialogActions>
 				<Button onClick={closeTask}>Cancel</Button>

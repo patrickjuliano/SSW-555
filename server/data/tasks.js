@@ -18,10 +18,10 @@ async function getTask(taskId) {
     return task;
 }
 
-async function getAllTasks(taskId) {
-    taskId = validation.checkId(taskId);
+async function getAllTasks(projectId) {
+    projectId = validation.checkId(projectId);
 
-    const project = await projectData.getProject(taskId);
+    const project = await projectData.getProject(projectId);
     return project.tasks;
 }
 
@@ -38,7 +38,8 @@ async function createTask(projectId, title, description) {
         _id: taskId,
         title: title,
         description: description,
-        stage: 0
+        stage: 0,
+        subtasks: []
     }
 
     const updateInfo = await projectCollection.updateOne({ _id: new ObjectId(projectId) }, { $addToSet: { tasks: newTask } });

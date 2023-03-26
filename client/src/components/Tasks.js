@@ -57,10 +57,6 @@ const Tasks = ({ project, refetch }) => {
 	async function moveTaskBackward(taskId) { await moveTask(taskId, false); }
 	async function moveTaskForward(taskId) { await moveTask(taskId, true); }
 
-	async function editTask(taskId) {
-		// TODO
-	}
-
 	const stages = ["Backlog", "To Do", "In Progress", "Done"]
 
 	const getTasksAtStage = (stage) => {

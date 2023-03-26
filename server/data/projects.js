@@ -18,6 +18,9 @@ async function getProject(projectId) {
     }
     for (let i = 0; i < project.tasks.length; i++) {
         project.tasks[i]._id = project.tasks[i]._id.toString();
+        for (let j = 0; j < project.tasks[i].subtasks.length; j++) {
+            project.tasks[i].subtasks[j]._id = project.tasks[i].subtasks[j]._id.toString();
+        }
     }
     return project;
 }

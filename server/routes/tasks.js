@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const data = require('../data');
 const taskData = data.tasks;
+const subtaskData = data.subtasks;
 const validation = require('../validation');
 
 router.get('/:id', async (req, res) => {
@@ -38,11 +39,18 @@ router.post('/', async (req, res) => {
         req.query.projectId = validation.checkId(req.query.projectId);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
+        for (let i = 0; i < req.query.subtask.length; i++) {
+            req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
+        }
     } catch (e) {
         return res.status(400).json({error: e});
     }
     try {
-        const task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description);
+        let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description);
+        for (let i = 0; i < req.query.subtask.length; i++) {
+            const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+        }
+        task = await taskData.getTask(task._id);
         res.status(200).json(task);
     } catch (e) {
         console.log(e);

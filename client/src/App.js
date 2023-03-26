@@ -372,7 +372,7 @@ function App() {
     <div>
       {!loading &&
         <div className='App'>
-          <Dialog open={createProjectOpen} onClose={handleCreateProjectClose}>
+          <Dialog open={createProjectOpen} onClose={handleCreateProjectClose} fullWidth maxWidth="xs">
             <DialogTitle>Create Project</DialogTitle>
             <DialogContent>
               <DialogContentText>
@@ -395,7 +395,7 @@ function App() {
               <Button onClick={handleCreateProjectSubmit}>Submit</Button>
             </DialogActions>
           </Dialog>
-          <Dialog open={joinProjectOpen} onClose={handleJoinProjectClose}>
+          <Dialog open={joinProjectOpen} onClose={handleJoinProjectClose} fullWidth maxWidth="xs">
             <DialogTitle>Join Project</DialogTitle>
             <DialogContent>
               <DialogContentText>

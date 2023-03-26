@@ -77,7 +77,7 @@ const CreatePhoto = ({ project, refetch, open, onClose }) => {
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
 				
-				<DialogContentText sx={{ mt: 1 }}>Please specify whether the photo is required.</DialogContentText>
+				<DialogContentText mt={1}>Please specify whether the photo is required.</DialogContentText>
 				<FormGroup>
   					<FormControlLabel control={<Checkbox />} label="Required" onChange={onRequiredChange} />
 				</FormGroup>
