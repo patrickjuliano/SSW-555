@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, CardMedia, Grid, IconButton, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Grid, IconButton, Typography } from '@mui/material';
 import { create } from '@mui/material/styles/createTransitions';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -9,9 +9,17 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Delete from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
+import Task from './Task';
 
 const Tasks = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
+
+	const [task, setTask] = useState(null);
+	const [taskOpen, setTaskOpen] = useState(false);
+	const openTask = (task) => {
+		setTask(task);
+		setTaskOpen(true);
+	}
 
 	const [createTaskOpen, setCreateTaskOpen] = useState(false);
 	const openCreateTask = () => setCreateTaskOpen(true);
@@ -62,10 +70,12 @@ const Tasks = ({ project, refetch }) => {
 						{tasks.map((task, index) => (
 							<Grid item>
 								<Card variant="outlined">
-									<CardContent>
-										<Typography variant="h6" component="div">{task.title}</Typography>
-										<Typography variant="body2">{task.description}</Typography>
-									</CardContent>
+									<CardActionArea component="button" onClick={() => openTask(task)}>
+										<CardContent>
+											<Typography variant="h6" component="div">{task.title}</Typography>
+											<Typography variant="body2">{task.description}</Typography>
+										</CardContent>
+									</CardActionArea>
 									<CardActions disableSpacing>
 										{stage !== 0 &&
 											<IconButton onClick={() => moveTaskBackward(task._id)} component="label" aria-label="Move task to previous stage">
@@ -78,7 +88,7 @@ const Tasks = ({ project, refetch }) => {
 											</IconButton>
 										}
 										{true &&
-											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
+											<IconButton component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
 												<Settings />
 											</IconButton>
 										}
@@ -120,6 +130,11 @@ const Tasks = ({ project, refetch }) => {
 				open={deleteTaskId}
 				onClose={() => setDeleteTaskId(null)}
 				onSubmit={deleteTask}
+			/>
+			<Task 
+				task={task}
+				open={taskOpen}
+				onClose={() => setTaskOpen(false)}
 			/>
 
 			{project.tasks && createTaskColumns()}
