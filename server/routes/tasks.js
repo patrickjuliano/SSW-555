@@ -39,16 +39,20 @@ router.post('/', async (req, res) => {
         req.query.projectId = validation.checkId(req.query.projectId);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
-        for (let i = 0; i < req.query.subtask.length; i++) {
-            req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
+        if ('subtask' in req.query) {
+            for (let i = 0; i < req.query.subtask.length; i++) {
+                req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
+            }
         }
     } catch (e) {
         return res.status(400).json({error: e});
     }
     try {
         let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description);
-        for (let i = 0; i < req.query.subtask.length; i++) {
-            const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+        if ('subtask' in req.query) {
+            for (let i = 0; i < req.query.subtask.length; i++) {
+                const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+            }
         }
         task = await taskData.getTask(task._id);
         res.status(200).json(task);
@@ -64,11 +68,23 @@ router.put('/:id', async (req, res) => {
         req.params.id = validation.checkId(req.params.id);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
+        if ('subtask' in req.query) {
+            for (let i = 0; i < req.query.subtask.length; i++) {
+                req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
+            }
+        }
     } catch (e) {
+        console.log(e);
         return res.status(400).json({error: e});
     }
     try {
-        const task = await taskData.editTask(req.params.id, req.query.title, req.query.description);
+        let task = await taskData.editTask(req.params.id, req.query.title, req.query.description);
+        if ('subtask' in req.query) {
+            for (let i = 0; i < req.query.subtask.length; i++) {
+                const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+            }
+        }
+        task = await taskData.getTask(task._id);
         res.status(200).json(task);
     } catch (e) {
         console.log(e);
@@ -120,6 +136,42 @@ router.patch('/:taskId/subtasks/:subtaskId', async (req, res) => {
         const subtask = await subtaskData.toggleSubtask(req.params.taskId, req.params.subtaskId, req.query.done);
         res.status(200).json(subtask);
     } catch (e) {
+        res.status(404).json({error: e});
+    }
+});
+
+router.patch('/:taskId/subtasks/:subtaskId/edit', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.params.subtaskId = validation.checkId(req.params.subtaskId);
+        req.query.description = validation.checkString(req.query.description);
+    } catch (e) {
+        console.log(e);
+        return res.status(400).json({error: e});
+    }
+    try {
+        const subtask = await subtaskData.editDescription(req.params.taskId, req.params.subtaskId, req.query.description);
+        res.status(200).json(subtask);
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
+
+router.delete('/:taskId/subtasks/:subtaskId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.params.subtaskId = validation.checkId(req.params.subtaskId);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const task = await subtaskData.removeSubtask(req.params.taskId, req.params.subtaskId);
+        res.status(200).json(task);
+    } catch (e) {
+        console.log(e);
         res.status(404).json({error: e});
     }
 });

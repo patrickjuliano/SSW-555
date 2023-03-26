@@ -45,21 +45,43 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		setSubtaskErrors(data);
 	}
 
+	const [oldSubtasks, setOldSubtasks] = useState([]);
+	const [oldSubtaskDeleteIds, setOldSubtaskDeleteIds] = useState([]);
+	const onOldSubtaskRemove = (index) => {
+		setOldSubtaskDeleteIds(state => [...state, oldSubtasks[index]._id])
+		setOldSubtasks(state => state.filter((_, i) => i !== index));
+		setOldSubtaskErrors(state => state.filter((_, i) => i !== index));
+	}
+	const onOldSubtaskChange = (value, index) => {
+		const data = [...oldSubtasks];
+		data[index].description = value;
+		setOldSubtasks(data);
+	}
+	const [oldSubtaskErrors, setOldSubtaskErrors] = useState([]);
+	const onOldSubtaskErrorClose = (index) => {
+		const data = [...oldSubtaskErrors];
+		data[index] = null;
+		setOldSubtaskErrors(data);
+	}
+
 	const resetValues = () => {
 		if (task) {
 			setTitle(task.title);
 			setDescription(task.description);
-			setSubtasks([]);
+			setOldSubtasks(task.subtasks);
 		} else {
 			setTitle(null);
 			setDescription(null);
-			setSubtasks([]);
+			setOldSubtasks([]);
 		}
+		setSubtasks([]);
+		setOldSubtaskDeleteIds([]);
 	}
 	const resetErrors = () => {
 		setTitleError(null);
 		setDescriptionError(null);
 		setSubtaskErrors([]);
+		setOldSubtaskErrors([]);
 	}
 	useEffect(() => {
 		if (open) {
@@ -92,6 +114,18 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 			errors++;
 			setDescriptionError(e);
 		}
+		const localOldSubtasks = [...oldSubtasks];
+		const localOldSubtaskErrors = [...oldSubtaskErrors];
+		for (let i = 0; i < localOldSubtasks.length; i++) {
+			try {
+				localOldSubtasks[i].description = checkString(localOldSubtasks[i].description);
+				localOldSubtaskErrors[i] = null;
+			} catch (e) {
+				errors++;
+				localOldSubtaskErrors[i] = e;
+			}
+		}
+		setOldSubtaskErrors(localOldSubtaskErrors);
 		const localSubtasks = [...subtasks];
 		const localSubtaskErrors = [...subtaskErrors];
 		for (let i = 0; i < localSubtasks.length; i++) {
@@ -109,12 +143,26 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 			async function fetchData() {
 				try {
 					let subtaskString = '';
-					for (let i = 0; i < localSubtasks.length; i++) {
-						subtaskString += `&subtask=${localSubtasks[i]}`;
+					if (localSubtasks.length === 1) {
+						subtaskString = `&subtask[]=${localSubtasks[0]}`;
+					} else {
+						for (let i = 0; i < localSubtasks.length; i++) {
+							subtaskString += `&subtask=${localSubtasks[i]}`;
+						}
 					}
-					const { data } = task ? 
-						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}`) :
+					var { data } = task ? 
+						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}${subtaskString}`) :
 						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}${subtaskString}`);
+					if (task) {
+						for (let i = 0; i < localOldSubtasks.length; i++) {
+							const subtask = localOldSubtasks[i];
+							var { data } = await axios.patch(`http://localhost:4000/tasks/${task._id}/subtasks/${subtask._id}/edit?description=${subtask.description}`);
+						}
+						for (let i = 0; i < oldSubtaskDeleteIds.length; i++) {
+							const subtaskId = oldSubtaskDeleteIds[i];
+							var { data } = await axios.delete(`http://localhost:4000/tasks/${task._id}/subtasks/${subtaskId}`);
+						}
+					}
 					refetch();
 					closeTask();
 				} catch (e) {
@@ -130,7 +178,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		<Dialog open={fullyOpen} onClose={closeTask} fullWidth maxWidth="sm">
 			<DialogTitle>{task ? "Edit" : "Create"} Task</DialogTitle>
 			<DialogContent>
-				<DialogContentText>Please enter a title for the task.</DialogContentText>
+				<DialogContentText>Enter a title for the task.</DialogContentText>
 				<TextField
 					autoFocus
 					margin="dense"
@@ -144,7 +192,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
 
-				<DialogContentText mt={1}>Please enter a description for the task.</DialogContentText>
+				<DialogContentText mt={1}>Enter a description for the task.</DialogContentText>
 				<TextField
 					margin="dense"
 					id="Description"
@@ -162,8 +210,28 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 					<DatePicker />
 				</LocalizationProvider> */}
 
-				<DialogContentText mt={1}>If applicable, enter any subtasks associated with this task.</DialogContentText>
+				<DialogContentText mt={1}>Enter descriptions for any subtasks associated with this task.</DialogContentText>
 				<List disablePadding>
+					{oldSubtasks.map((subtask, index) => (
+						<ListItem disablePadding>
+							<ListItemButton onClick={() => onOldSubtaskRemove(index)} sx={{ p: 1 }}>
+								<ListItemIcon>
+									<RemoveCircleIcon />
+								</ListItemIcon>
+							</ListItemButton>
+							<TextField
+								margin="dense"
+								label="Subtask"
+								type="text"
+								variant="standard"
+								fullWidth
+								value={oldSubtasks[index].description}
+								onChange={(event) => onOldSubtaskChange(event.target.value, index)}
+							/>
+							{oldSubtaskErrors[index] && <Alert severity="error" onClose={() => onOldSubtaskErrorClose(index)}>{oldSubtaskErrors[index]}</Alert>}
+						</ListItem>
+					))}
+
 					{subtasks.map((subtask, index) => (
 						<ListItem disablePadding>
 							<ListItemButton onClick={() => onSubtaskRemove(index)} sx={{ p: 1 }}>

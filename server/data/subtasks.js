@@ -68,40 +68,46 @@ async function toggleSubtask(taskId, subtaskId, done) {
     return updatedSubtask;
 }
 
-// async function editTask(taskId, title, description) {
-//     taskId = validation.checkId(taskId);
-//     title = validation.checkString(title);
-//     description = validation.checkString(description);
+async function editDescription(taskId, subtaskId, description) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    description = validation.checkString(description);
 
-//     let task = await getTask(taskId);
-
-//     const projectCollection = await projects();
-//     const updateInfo = await projectCollection.updateOne(
-//         { 'tasks._id': new ObjectId(taskId) }, 
-//         { $set: { 'tasks.$[updateTask].title': title, 'tasks.$[updateTask].description': description } },
-//         { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
-//     );
-
-//     task = await getTask(taskId);
-//     return task;
-// }
-
-// async function removeTask(taskId) {
-//     taskId = validation.checkId(taskId);
+    const subtask = await getSubtask(taskId, subtaskId);
     
-//     const projectCollection = await projects();
-//     const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
-//     if (project === null) throw 'No task with that id';
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].subtasks.$[updateSubtask].description': description } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateSubtask._id': new ObjectId(subtaskId) } ] }
+    );
 
-//     const updateInfo = await projectCollection.updateOne({ _id: project._id }, { $pull: { tasks: { _id: new ObjectId(taskId) } } });
+    const updatedSubtask = await getSubtask(taskId, subtaskId);
+    return updatedSubtask;
+}
 
-//     const updatedProject = await projectData.getProject(project._id.toString());
-//     return updatedProject;
-// }
+async function removeSubtask(taskId, subtaskId) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    
+    const subtask = await getSubtask(taskId, subtaskId);
+    
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $pull: { 'tasks.$[updateTask].subtasks': { _id: new ObjectId(subtaskId) } } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    const updatedTask = await taskData.getTask(taskId);
+    return updatedTask;
+}
 
 module.exports = {
     getSubtask,
     getAllSubtasks,
     createSubtask,
-    toggleSubtask
+    toggleSubtask,
+    editDescription,
+    removeSubtask
 }
