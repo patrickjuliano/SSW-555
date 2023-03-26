@@ -11,7 +11,7 @@ async function getSubtask(taskId, subtaskId) {
     taskId = validation.checkId(taskId);
     subtaskId = validation.checkId(subtaskId);
 
-    const subtasks = getAllSubtasks(taskId);
+    const subtasks = await getAllSubtasks(taskId);
     const subtask = subtasks.find(subtask => subtask._id.toString() === subtaskId);
     if (subtask === undefined) throw 'No subtask with that id';
 
@@ -50,6 +50,24 @@ async function createSubtask(taskId, description) {
     return newSubtask;
 }
 
+async function toggleSubtask(taskId, subtaskId, done) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    done = validation.checkBoolean(done);
+
+    const subtask = await getSubtask(taskId, subtaskId);
+    
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].subtasks.$[updateSubtask].done': done } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateSubtask._id': new ObjectId(subtaskId) } ] }
+    );
+
+    const updatedSubtask = await getSubtask(taskId, subtaskId);
+    return updatedSubtask;
+}
+
 // async function editTask(taskId, title, description) {
 //     taskId = validation.checkId(taskId);
 //     title = validation.checkString(title);
@@ -84,5 +102,6 @@ async function createSubtask(taskId, description) {
 module.exports = {
     getSubtask,
     getAllSubtasks,
-    createSubtask
+    createSubtask,
+    toggleSubtask
 }

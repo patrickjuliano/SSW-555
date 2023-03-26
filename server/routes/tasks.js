@@ -107,25 +107,21 @@ router.patch('/:id/move/:forward', async (req, res) => {
     }
 });
 
-// router.patch('/:id/upload', async (req, res) => {
-//     console.log("A");
-//     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
-//     console.log("B");
-//     try {
-//         req.params.id = validation.checkId(req.params.id);
-//         req.query.file = validation.checkFile(req.query.file);
-//     } catch (e) {
-//         console.log(e);
-//         return res.status(400).json({error: e});
-//     }
-//     console.log("C");
-//     try {
-//         const photo = await photoData.uploadPhoto(req.params.id, req.query.file);
-//         res.status(200).json(photo);
-//     } catch (e) {
-//         console.log(e);
-//         res.status(404).json({error: e});
-//     }
-// });
+router.patch('/:taskId/subtasks/:subtaskId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.params.subtaskId = validation.checkId(req.params.subtaskId);
+        req.query.done = validation.checkBoolean(req.query.done);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const subtask = await subtaskData.toggleSubtask(req.params.taskId, req.params.subtaskId, req.query.done);
+        res.status(200).json(subtask);
+    } catch (e) {
+        res.status(404).json({error: e});
+    }
+});
 
 module.exports = router;

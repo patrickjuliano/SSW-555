@@ -6,6 +6,16 @@ import '../App.css';
 const Task = ({ task, open, onClose }) => {
 	axios.defaults.withCredentials = true;
 
+	async function toggleSubtask(taskId, subtaskId, done) {
+		try {
+			const { data } = await axios.patch(`http://localhost:4000/tasks/${taskId}/subtasks/${subtaskId}?done=${done}`);
+			refetch();
+		} catch (e) {
+			// TODO
+			alert(e);
+		}
+	}
+
 	return (
 		<div>
 			{task &&
@@ -26,9 +36,9 @@ const Task = ({ task, open, onClose }) => {
 									>
 										<ListItemButton dense>
 											<ListItemIcon>
-												<Checkbox />
+												<Checkbox checked={subtask.done} onChange={(event) => toggleSubtask(task._id, subtask._id, event.target.checked)} />
 											</ListItemIcon>
-											<ListItemText checked={subtask.done} primary={subtask.description} primaryTypographyProps={{ variant: "body1" }} />
+											<ListItemText primary={subtask.description} primaryTypographyProps={{ variant: "body1" }} />
 										</ListItemButton>
 									</ListItem>
 								))}
