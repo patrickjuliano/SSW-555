@@ -34,6 +34,7 @@ function App() {
   const [createProjectTitleError, setCreateProjectTitleError] = useState(null);
 
   const [joinProjectOpen, setJoinProjectOpen] = useState(false);
+  const [joinProjectId, setJoinProjectId] = useState(null);
   const [joinProjectIdError, setJoinProjectIdError] = useState(null);
 
   const [logInOpen, setLogInOpen] = useState(false);
@@ -92,12 +93,12 @@ function App() {
 	}, [user]);
 
   const handleCreateProjectOpen = () => {
+    resetCreateProjectValues();
+    resetCreateProjectErrors();
     setCreateProjectOpen(true);
   }
   const handleCreateProjectClose = () => {
     setCreateProjectOpen(false);
-    resetCreateProjectValues();
-    resetCreateProjectErrors();
   }
   const handleCreateProjectSubmit = () => {
     let errors = 0;
@@ -114,6 +115,7 @@ function App() {
       async function fetchData() {
         try {
           const { data } = await axios.post(`http://localhost:4000/projects?title=${title}`);
+          resetCreateProjectErrors();
           handleCreateProjectClose();
           setFetchFlag(true);
         } catch (e) {
@@ -125,14 +127,37 @@ function App() {
   }
 
   const handleJoinProjectOpen = () => {
+    resetJoinProjectValues();
+    resetJoinProjectErrors();
     setJoinProjectOpen(true);
   }
   const handleJoinProjectClose = () => {
     setJoinProjectOpen(false);
-    hideJoinProjectIdError();
   }
   const handleJoinProjectSubmit = () => {
-    
+    let errors = 0;
+
+    let id;
+    try {
+      id = checkString(joinProjectId);
+    } catch (e) {
+      errors++;
+      setJoinProjectIdError(e);
+    }
+
+    if (errors == 0) {
+      async function fetchData() {
+        try {
+          const { data } = await axios.post(`http://localhost:4000/projects/${id}/join`);
+          resetJoinProjectErrors();
+          handleJoinProjectClose();
+          setFetchFlag(true);
+        } catch (e) {
+          setJoinProjectIdError(e.response.data.error);
+        }
+      }
+      fetchData();
+    }
   }
 
   const handleLogInOpen = () => {
@@ -282,6 +307,10 @@ function App() {
     setCreateProjectTitle(event.target.value);
   }
 
+  const handleJoinProjectIdChange = (event) => {
+    setJoinProjectId(event.target.value);
+  }
+
   const handleLogInEmailChange = (event) => {
     setLogInEmail(event.target.value);
   }
@@ -313,6 +342,12 @@ function App() {
   }
   const resetCreateProjectErrors = () => {
     hideCreateProjectTitleError();
+  }
+  const resetJoinProjectValues = () => {
+    setJoinProjectId(null);
+  }
+  const resetJoinProjectErrors = () => {
+    hideJoinProjectIdError();
   }
   const resetLogInValues = () => {
     setLogInEmail(null);
@@ -409,12 +444,13 @@ function App() {
                 type="text"
                 fullWidth
                 variant="standard"
+                onChange={handleJoinProjectIdChange}
               />
               {joinProjectIdError && <Alert severity="error" onClose={hideJoinProjectIdError}>{joinProjectIdError}</Alert>}
             </DialogContent>
             <DialogActions>
               <Button onClick={handleJoinProjectClose}>Cancel</Button>
-              <Button onClick={handleJoinProjectClose}>Submit</Button>
+              <Button onClick={handleJoinProjectSubmit}>Submit</Button>
             </DialogActions>
           </Dialog>
           <Dialog open={logInOpen} onClose={handleLogInClose}>

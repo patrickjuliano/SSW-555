@@ -57,7 +57,7 @@ async function createProject(userId, title) {
     
     const insertInfo = await projectCollection.insertOne(newProject);
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw 'Could not add project';
-    const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: projectId } });
+    const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
 
     newProject._id = newProject._id.toString();
     return newProject;
@@ -68,7 +68,7 @@ async function joinProject(userId, projectId) {
     projectId = validation.checkId(projectId);
 
     const user = await userData.getUser(userId);
-    const project = await getProject(projectId);
+    let project = await getProject(projectId);
 
     const inProject = false;
     for (const id of user.projects) {
@@ -80,8 +80,9 @@ async function joinProject(userId, projectId) {
     if (inProject) throw 'User already belongs to this project';
 
     const userCollection = await users();
-    const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: projectId } });
+    const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
     
+    project = await getProject(projectId);
     return project;
 }
 

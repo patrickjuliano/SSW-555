@@ -61,6 +61,21 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.post('/:id/join', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.id = validation.checkId(req.params.id);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const project = await projectData.joinProject(req.session.userId, req.params.id);
+        res.status(200).json(project);
+    } catch (e) {
+        res.status(404).json({error: e});
+    }
+});
+
 // router.delete('/:id', async (req, res) => {
 //     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
 //     try {
