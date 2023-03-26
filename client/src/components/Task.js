@@ -15,23 +15,26 @@ const Task = ({ task, open, onClose }) => {
 						<DialogContentText sx={{ fontWeight: "bold" }}>Description</DialogContentText>
 						<DialogContentText>{task.description}</DialogContentText>
 					</DialogContent>
-					<DialogContent>
-						<DialogContentText sx={{ fontWeight: "bold" }}>Subtasks</DialogContentText>
-						<List>
-							<ListItem
-								key={1}
-								disablePadding
-							>
-								<ListItemButton dense>
-									<ListItemIcon>
-										<Checkbox />
-									</ListItemIcon>
-									<ListItemText primary="This is an example subtask!" primaryTypographyProps={{ variant: "body1" }} />
-								</ListItemButton>
-							</ListItem>
-
-						</List>
-					</DialogContent>
+					{task.subtasks && task.subtasks.length > 0 &&
+						<DialogContent>
+							<DialogContentText sx={{ fontWeight: "bold" }}>Subtasks</DialogContentText>
+							<List>
+								{task.subtasks.map((subtask, index) => (
+									<ListItem
+										key={`subtask-${index}`}
+										disablePadding
+									>
+										<ListItemButton dense>
+											<ListItemIcon>
+												<Checkbox />
+											</ListItemIcon>
+											<ListItemText checked={subtask.done} primary={subtask.description} primaryTypographyProps={{ variant: "body1" }} />
+										</ListItemButton>
+									</ListItem>
+								))}
+							</List>
+						</DialogContent>
+					}
 				</Dialog>
 			}
 		</div>
