@@ -45,6 +45,25 @@ router.post('/', async (req, res) => {
         const task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description);
         res.status(200).json(task);
     } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
+
+router.put('/:id', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.id = validation.checkId(req.params.id);
+        req.query.title = validation.checkString(req.query.title);
+        req.query.description = validation.checkString(req.query.description);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const task = await taskData.editTask(req.params.id, req.query.title, req.query.description);
+        res.status(200).json(task);
+    } catch (e) {
+        console.log(e);
         res.status(404).json({error: e});
     }
 });
@@ -70,7 +89,6 @@ router.patch('/:id/move/:forward', async (req, res) => {
         req.params.id = validation.checkId(req.params.id);
         req.params.forward = validation.checkBoolean(req.params.forward);
     } catch (e) {
-        console.log(e);
         return res.status(400).json({error: e});
     }
     try {

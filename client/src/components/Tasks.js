@@ -22,7 +22,14 @@ const Tasks = ({ project, refetch }) => {
 	}
 
 	const [createTaskOpen, setCreateTaskOpen] = useState(false);
-	const openCreateTask = () => setCreateTaskOpen(true);
+	const openCreateTask = () => {
+		setTask(null);
+		setCreateTaskOpen(true);
+	}
+	const openEditTask = (task) => {
+		setTask(task);
+		setCreateTaskOpen(true);
+	}
 	const closeCreateTask = () => setCreateTaskOpen(false);
 
 	const [deleteTaskId, setDeleteTaskId] = useState(null);
@@ -88,7 +95,7 @@ const Tasks = ({ project, refetch }) => {
 											</IconButton>
 										}
 										{true &&
-											<IconButton component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
+											<IconButton onClick={() => openEditTask(task)} component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
 												<Settings />
 											</IconButton>
 										}
@@ -123,7 +130,13 @@ const Tasks = ({ project, refetch }) => {
 				<h3>Tasks</h3>
 				<Button variant="contained" onClick={openCreateTask}>Create Task</Button>
 			</div>
-			<CreateTask project={project} refetch={refetch} open={createTaskOpen} onClose={closeCreateTask} />
+			<CreateTask 
+				project={project}
+				refetch={refetch}
+				open={createTaskOpen}
+				onClose={closeCreateTask}
+				task={task}
+			/>
 			<Confirmation
 				title="Delete Task"
 				body="Are you sure you want to delete this task?"

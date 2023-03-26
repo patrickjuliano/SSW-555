@@ -47,6 +47,24 @@ async function createTask(projectId, title, description) {
     return newTask;
 }
 
+async function editTask(taskId, title, description) {
+    taskId = validation.checkId(taskId);
+    title = validation.checkString(title);
+    description = validation.checkString(description);
+
+    let task = await getTask(taskId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].title': title, 'tasks.$[updateTask].description': description } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    task = await getTask(taskId);
+    return task;
+}
+
 async function removeTask(taskId) {
     taskId = validation.checkId(taskId);
     
@@ -85,6 +103,7 @@ module.exports = {
     getTask,
     getAllTasks,
     createTask,
+    editTask,
     removeTask,
     moveTask
 }
