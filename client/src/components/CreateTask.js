@@ -24,18 +24,42 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	const onDescriptionChange = (event) => setDescription(event.target.value);
 	const [descriptionError, setDescriptionError] = useState(null);
 
+	const [subtasks, setSubtasks] = useState([]);
+	const onSubtaskAdd = () => {
+		setSubtasks(state => [...state, ""]);
+		setSubtaskErrors(state => [...state, null]);
+	}
+	const onSubtaskRemove = (index) => {
+		setSubtasks(state => state.filter((_, i) => i !== index));
+		setSubtaskErrors(state => state.filter((_, i) => i !== index));
+	}
+	const onSubtaskChange = (value, index) => {
+		const data = [...subtasks];
+		data[index] = value;
+		setSubtasks(data);
+	}
+	const [subtaskErrors, setSubtaskErrors] = useState([]);
+	const onSubtaskErrorClose = (index) => {
+		const data = [...subtaskErrors];
+		data[index] = null;
+		setSubtaskErrors(data);
+	}
+
 	const resetValues = () => {
 		if (task) {
 			setTitle(task.title);
 			setDescription(task.description);
+			setSubtasks([]);
 		} else {
 			setTitle(null);
 			setDescription(null);
+			setSubtasks([]);
 		}
 	}
 	const resetErrors = () => {
 		setTitleError(null);
 		setDescriptionError(null);
+		setSubtaskErrors([]);
 	}
 	useEffect(() => {
 		if (open) {
@@ -56,23 +80,41 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 
 		try {
 			var newTitle = checkString(title);
+			setTitleError(null);
 		} catch (e) {
 			errors++;
 			setTitleError(e);
 		}
 		try {
 			var newDescription = checkString(description);
+			setDescriptionError(null);
 		} catch (e) {
 			errors++;
 			setDescriptionError(e);
 		}
+		const localSubtasks = [...subtasks];
+		const localSubtaskErrors = [...subtaskErrors];
+		for (let i = 0; i < localSubtasks.length; i++) {
+			try {
+				localSubtasks[i] = checkString(localSubtasks[i]);
+				localSubtaskErrors[i] = null;
+			} catch (e) {
+				errors++;
+				localSubtaskErrors[i] = e;
+			}
+		}
+		setSubtaskErrors(localSubtaskErrors);
 
 		if (errors == 0) {
 			async function fetchData() {
 				try {
+					let subtaskString = '';
+					for (let i = 0; i < localSubtasks.length; i++) {
+						subtaskString += `&subtask=${localSubtasks[i]}`;
+					}
 					const { data } = task ? 
 						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}`) :
-						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}`);
+						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}${subtaskString}`);
 					refetch();
 					closeTask();
 				} catch (e) {
@@ -122,23 +164,28 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 
 				<DialogContentText mt={1}>If applicable, enter any subtasks associated with this task.</DialogContentText>
 				<List disablePadding>
-					<ListItem disablePadding>
-						<ListItemButton sx={{ p: 1 }}>
-							<ListItemIcon>
-								<RemoveCircleIcon />
-							</ListItemIcon>
-						</ListItemButton>
-						<TextField
-							margin="dense"
-							label="Subtask"
-							type="text"
-							variant="standard"
-							fullWidth
-						/>
-					</ListItem>
+					{subtasks.map((subtask, index) => (
+						<ListItem disablePadding>
+							<ListItemButton onClick={() => onSubtaskRemove(index)} sx={{ p: 1 }}>
+								<ListItemIcon>
+									<RemoveCircleIcon />
+								</ListItemIcon>
+							</ListItemButton>
+							<TextField
+								margin="dense"
+								label="Subtask"
+								type="text"
+								variant="standard"
+								fullWidth
+								value={subtasks[index]}
+								onChange={(event) => onSubtaskChange(event.target.value, index)}
+							/>
+							{subtaskErrors[index] && <Alert severity="error" onClose={() => onSubtaskErrorClose(index)}>{subtaskErrors[index]}</Alert>}
+						</ListItem>
+					))}
 
 					<ListItem disablePadding>
-						<ListItemButton sx={{ p: 1 }}>
+						<ListItemButton onClick={onSubtaskAdd} sx={{ p: 1 }}>
 							<ListItemIcon>
 								<AddCircleIcon />
 							</ListItemIcon>
