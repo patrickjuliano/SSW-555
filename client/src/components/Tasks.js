@@ -1,4 +1,4 @@
-import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Grid, IconButton, Typography } from '@mui/material';
+import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { create } from '@mui/material/styles/createTransitions';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -7,6 +7,7 @@ import Confirmation from './Confirmation';
 import CreateTask from './CreateTask';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Delete from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
 import Task from './Task';
@@ -85,24 +86,39 @@ const Tasks = ({ project, refetch }) => {
 									</CardActionArea>
 									<CardActions disableSpacing>
 										{stage !== 0 &&
-											<IconButton onClick={() => moveTaskBackward(task._id)} component="label" aria-label="Move task to previous stage">
-												<ArrowBackIcon />
-											</IconButton>
+											<Tooltip title={`${stages[stage]} → ${stages[stage - 1]}`}>
+												<IconButton onClick={() => moveTaskBackward(task._id)} component="label" aria-label="Move task to previous stage">
+													<ArrowBackIcon />
+												</IconButton>
+											</Tooltip>
 										}
 										{stage !== stages.length - 1 &&
-											<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Move task to next stage" /*sx={{ marginLeft: 'auto' }}*/>
-												<ArrowForwardIcon />
-											</IconButton>
+											<Tooltip title={`${stages[stage]} → ${stages[stage + 1]}`}>
+												<IconButton onClick={() => moveTaskForward(task._id)} component="label" aria-label="Move task to next stage">
+													<ArrowForwardIcon />
+												</IconButton>
+											</Tooltip>
 										}
 										{true &&
-											<IconButton onClick={() => openEditTask(task)} component="label" aria-label="Edit task" sx={{ marginLeft: 'auto' }}>
-												<Settings />
-											</IconButton>
+											<Tooltip title="Assign Task">
+												<IconButton component="label" aria-label="Assign task" sx={{ marginLeft: 'auto' }}>
+													<PersonAddIcon />
+												</IconButton>
+											</Tooltip>
 										}
 										{true &&
-											<IconButton onClick={() => setDeleteTaskId(task._id)} component="label" aria-label="Delete task">
-												<Delete />
-											</IconButton>
+											<Tooltip title="Edit Task">
+												<IconButton onClick={() => openEditTask(task)} component="label" aria-label="Edit task">
+													<Settings />
+												</IconButton>
+											</Tooltip>
+										}
+										{true &&
+											<Tooltip title="Delete Task">
+												<IconButton onClick={() => setDeleteTaskId(task._id)} component="label" aria-label="Delete task">
+													<Delete />
+												</IconButton>
+											</Tooltip>
 										}
 									</CardActions>
 								</Card>
