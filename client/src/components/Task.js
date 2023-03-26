@@ -3,7 +3,7 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import '../App.css';
 
-const Task = ({ task, open, onClose }) => {
+const Task = ({ task, open, onClose, refetch }) => {
 	axios.defaults.withCredentials = true;
 
 	async function toggleSubtask(taskId, subtaskId, done) {

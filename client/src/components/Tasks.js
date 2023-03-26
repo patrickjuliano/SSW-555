@@ -1,7 +1,7 @@
 import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { create } from '@mui/material/styles/createTransitions';
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../App.css';
 import Confirmation from './Confirmation';
 import CreateTask from './CreateTask';
@@ -21,6 +21,16 @@ const Tasks = ({ project, refetch }) => {
 		setTask(task);
 		setTaskOpen(true);
 	}
+
+	useEffect(() => {
+		async function fetchData() {
+			if (task) {
+				const updatedTask = project.tasks.find(updatedTask => updatedTask._id === task._id);
+				if (updatedTask !== undefined) setTask(updatedTask);
+			}
+		}
+		fetchData()
+	}, [ project ]);
 
 	const [createTaskOpen, setCreateTaskOpen] = useState(false);
 	const openCreateTask = () => {
@@ -160,6 +170,7 @@ const Tasks = ({ project, refetch }) => {
 				task={task}
 				open={taskOpen}
 				onClose={() => setTaskOpen(false)}
+				refetch={refetch}
 			/>
 
 			{project.tasks && createTaskColumns()}
