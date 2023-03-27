@@ -10,11 +10,19 @@ import { checkFile, checkString } from '../validation';
 import Confirmation from './Confirmation';
 
 import CreatePhoto from './CreatePhoto';
+import UploadPhoto from './UploadPhoto';
 
 const Photos = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
 
 	const [photo, setPhoto] = useState(null);
+
+	const [uploadPhotoOpen, setUploadPhotoOpen] = useState(false);
+	const openUploadPhoto = (photo) => {
+		setPhoto(photo);
+		setUploadPhotoOpen(true);
+	}
+	const closeUploadPhoto = () => setUploadPhotoOpen(false);
 
 	const [createPhotoOpen, setCreatePhotoOpen] = useState(false);
 	const openCreatePhoto = () => {
@@ -39,35 +47,6 @@ const Photos = ({ project, refetch }) => {
 		}
 	}
 
-	async function onImageUpload(photoId, event) {
-		// PAT: Store File object and do this whole chunk (new fileReader, readAsDataURL, onload) inside map for each image
-		try {
-			let file = event.target.files[0];
-			file = checkFile(file);
-			const { data } = await axios.patch(`http://localhost:4000/photos/${photoId}/upload?file=${file}`);
-			refetch();
-		} catch (e) {
-			// TODO
-			alert(e);
-		}
-		
-		// const fileReader = new FileReader();
-		// fileReader.onload = (e) => {
-		// 	const image = encodeURIComponent(e.target.result);
-		// 	async function fetchData(photoId, image) {
-		// 		try {
-		// 			const { data } = await axios.patch(`http://localhost:4000/photos/${photoId}/upload?file=${file}`);
-		// 			refetch();
-		// 		} catch (e) {
-		// 			// TODO
-		// 			alert(e);
-		// 		}
-		// 	}
-		// 	fetchData(photoId, image);
-		// }
-		// fileReader.readAsDataURL(event.target.files[0]);
-	}
-
 	const getImage = (file) => {
 		const fileReader = new FileReader();
 		fileReader.onload = (e) => {
@@ -83,6 +62,13 @@ const Photos = ({ project, refetch }) => {
 				<h3>Photos</h3>
 				<Button variant="contained" onClick={openCreatePhoto}>Create Photo</Button>
 			</div>
+			<UploadPhoto
+				project={project}
+				refetch={refetch}
+				open={uploadPhotoOpen}
+				onClose={closeUploadPhoto}
+				photo={photo}
+			/>
 			<CreatePhoto 
 				project={project}
 				refetch={refetch}
@@ -117,9 +103,8 @@ const Photos = ({ project, refetch }) => {
 								/>
 							</CardContent>
 							<CardActions disableSpacing>
-								<IconButton component="label" aria-label="Insert photo">
+								<IconButton aria-label="Upload photo" onClick={() => openUploadPhoto(photo)}>
 									<AddAPhoto />
-									{/* <input type="file" accept=".png" hidden onChange={(event) => onImageUpload(photo._id, event)} /> */}
 								</IconButton>
 								<IconButton aria-label="Edit photo" onClick={() => openEditPhoto(photo)} sx={{ marginLeft: 'auto' }}>
 									<Settings />

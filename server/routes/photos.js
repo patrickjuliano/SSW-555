@@ -81,20 +81,35 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-router.patch('/:id/upload', async (req, res) => {
-    console.log("A");
+router.patch('/:id/upload/:src', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
-    console.log("B");
     try {
         req.params.id = validation.checkId(req.params.id);
-        req.query.file = validation.checkFile(req.query.file);
+        req.params.src = validation.checkString(req.params.src);
+        req.params.src = req.params.src.replaceAll('|', '/');
     } catch (e) {
         console.log(e);
         return res.status(400).json({error: e});
     }
-    console.log("C");
     try {
-        const photo = await photoData.uploadPhoto(req.params.id, req.query.file);
+        const photo = await photoData.uploadPhoto(req.params.id, req.params.src);
+        res.status(200).json(photo);
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
+
+router.delete('/:id/upload', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.id = validation.checkId(req.params.id);
+    } catch (e) {
+        console.log(e);
+        return res.status(400).json({error: e});
+    }
+    try {
+        const photo = await photoData.rescindPhoto(req.params.id);
         res.status(200).json(photo);
     } catch (e) {
         console.log(e);

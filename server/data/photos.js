@@ -78,22 +78,37 @@ async function removePhoto(photoId) {
     return updatedProject;
 }
 
-async function uploadPhoto(photoId, file) {
+async function uploadPhoto(photoId, src) {
     photoId = validation.checkId(photoId);
-    file = validation.checkFile(file);
+    src = validation.checkString(src);
+
+    let photo = await getPhoto(photoId);
 
     const projectCollection = await projects();
-    const project = await projectCollection.findOne({ 'photos._id': new ObjectId(photoId)});
-    if (project === null) throw 'No photo with that id';
-
     const updateInfo = await projectCollection.updateOne(
         { 'photos._id': new ObjectId(photoId) }, 
-        { $set: { 'photos.$[updatePhoto].src': file } },
+        { $set: { 'photos.$[updatePhoto].src': src } },
         { 'arrayFilters': [ { 'updatePhoto._id': new ObjectId(photoId) } ] }
     );
 
-    const updatedPhoto = await getPhoto(photoId);
-    return updatedPhoto;
+    photo = await getPhoto(photoId);
+    return photo;
+}
+
+async function rescindPhoto(photoId) {
+    photoId = validation.checkId(photoId);
+
+    let photo = await getPhoto(photoId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'photos._id': new ObjectId(photoId) }, 
+        { $set: { 'photos.$[updatePhoto].src': null } },
+        { 'arrayFilters': [ { 'updatePhoto._id': new ObjectId(photoId) } ] }
+    );
+
+    photo = await getPhoto(photoId);
+    return photo;
 }
 
 module.exports = {
@@ -102,5 +117,6 @@ module.exports = {
     createPhoto,
     editPhoto,
     removePhoto,
-    uploadPhoto
+    uploadPhoto,
+    rescindPhoto
 }
