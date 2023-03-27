@@ -13,6 +13,8 @@ import Settings from '@mui/icons-material/Settings';
 import Task from './Task';
 import AssignTask from './AssignTask';
 
+const descriptionCharacterLimit = 100;
+
 const Tasks = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
 
@@ -95,7 +97,7 @@ const Tasks = ({ project, refetch }) => {
 									<CardActionArea component="button" onClick={() => openTask(task)}>
 										<CardContent>
 											<Typography variant="h6" component="div">{task.title}</Typography>
-											<Typography variant="body2">{task.description}</Typography>
+											<Typography variant="body2">{task.description.substring(0, descriptionCharacterLimit)}{task.description.length > descriptionCharacterLimit && '...'}</Typography>
 										</CardContent>
 									</CardActionArea>
 									<CardActions disableSpacing>
