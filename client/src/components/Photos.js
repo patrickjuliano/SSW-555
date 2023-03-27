@@ -14,8 +14,17 @@ import CreatePhoto from './CreatePhoto';
 const Photos = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
 
+	const [photo, setPhoto] = useState(null);
+
 	const [createPhotoOpen, setCreatePhotoOpen] = useState(false);
-	const openCreatePhoto = () => setCreatePhotoOpen(true);
+	const openCreatePhoto = () => {
+		setPhoto(null);
+		setCreatePhotoOpen(true);
+	}
+	const openEditPhoto = (photo) => {
+		setPhoto(photo);
+		setCreatePhotoOpen(true);
+	}
 	const closeCreatePhoto = () => setCreatePhotoOpen(false);
 
 	const [deletePhotoId, setDeletePhotoId] = useState(null);
@@ -79,7 +88,7 @@ const Photos = ({ project, refetch }) => {
 				refetch={refetch}
 				open={createPhotoOpen}
 				onClose={closeCreatePhoto}
-				photo={null}
+				photo={photo}
 			/>
 			<Confirmation
 				title="Delete Photo"
@@ -112,7 +121,7 @@ const Photos = ({ project, refetch }) => {
 									<AddAPhoto />
 									{/* <input type="file" accept=".png" hidden onChange={(event) => onImageUpload(photo._id, event)} /> */}
 								</IconButton>
-								<IconButton aria-label="Photo settings" sx={{ marginLeft: 'auto' }}>
+								<IconButton aria-label="Edit photo" onClick={() => openEditPhoto(photo)} sx={{ marginLeft: 'auto' }}>
 									<Settings />
 								</IconButton>
 								<IconButton aria-label="Delete photo" onClick={() => setDeletePhotoId(photo._id)}>

@@ -78,8 +78,8 @@ const CreatePhoto = ({ project, refetch, open, onClose, photo }) => {
 	}
 
 	return (
-		<Dialog open={open} onClose={closeTask}>
-			<DialogTitle>Create Photo</DialogTitle>
+		<Dialog open={fullyOpen} onClose={closeTask}>
+			<DialogTitle>{photo ? "Edit" : "Create"} Photo</DialogTitle>
 			<DialogContent>
 				<DialogContentText>Please enter a title for the photo.</DialogContentText>
 				<TextField
@@ -90,13 +90,17 @@ const CreatePhoto = ({ project, refetch, open, onClose, photo }) => {
 					type="text"
 					variant="standard"
 					fullWidth
+					value={title}
 					onChange={onTitleChange}
 				/>
 				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
 				
 				<DialogContentText mt={1}>Please specify whether the photo is required.</DialogContentText>
 				<FormGroup>
-  					<FormControlLabel control={<Checkbox />} label="Required" onChange={onRequiredChange} />
+  					<FormControlLabel
+						control={<Checkbox checked={required} />}
+						label="Required"
+						onChange={onRequiredChange} />
 				</FormGroup>
 			</DialogContent>
 			<DialogActions>
