@@ -11,6 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Delete from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
 import Task from './Task';
+import AssignTask from './AssignTask';
 
 const Tasks = ({ project, refetch }) => {
 	axios.defaults.withCredentials = true;
@@ -42,6 +43,13 @@ const Tasks = ({ project, refetch }) => {
 		setCreateTaskOpen(true);
 	}
 	const closeCreateTask = () => setCreateTaskOpen(false);
+
+	const [assignTaskOpen, setAssignTaskOpen] = useState(false);
+	const openAssignTask = (task) => {
+		setTask(task);
+		setAssignTaskOpen(true);
+	}
+	const closeAssignTask = () => setAssignTaskOpen(false);
 
 	const [deleteTaskId, setDeleteTaskId] = useState(null);
 	async function deleteTask() {
@@ -107,7 +115,7 @@ const Tasks = ({ project, refetch }) => {
 										}
 										{true &&
 											<Tooltip title="Assign Task">
-												<IconButton component="label" aria-label="Assign task" sx={{ marginLeft: 'auto' }}>
+												<IconButton onClick={() => openAssignTask(task)} component="label" aria-label="Assign task" sx={{ marginLeft: 'auto' }}>
 													<PersonAddIcon />
 												</IconButton>
 											</Tooltip>
@@ -159,6 +167,13 @@ const Tasks = ({ project, refetch }) => {
 				onClose={closeCreateTask}
 				task={task}
 			/>
+			<AssignTask 
+				project={project}
+				refetch={refetch}
+				open={assignTaskOpen}
+				onClose={closeAssignTask}
+				task={task}
+			/>
 			<Confirmation
 				title="Delete Task"
 				body="Are you sure you want to delete this task?"
@@ -171,6 +186,7 @@ const Tasks = ({ project, refetch }) => {
 				open={taskOpen}
 				onClose={() => setTaskOpen(false)}
 				refetch={refetch}
+				stages={stages}
 			/>
 
 			{project.tasks && createTaskColumns()}

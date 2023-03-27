@@ -114,7 +114,26 @@ async function assignTask(taskId, userId) {
 
     const updateInfo = await projectCollection.updateOne(
         { 'tasks._id': new ObjectId(taskId) }, 
-        { $set: { 'tasks.$[updateTask].ownerId': userId } },
+        { $set: { 'tasks.$[updateTask].ownerId': new ObjectId(userId) } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    task = await getTask(taskId);
+    return task;
+}
+
+async function unassignTask(taskId) {
+    taskId = validation.checkId(taskId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
+    if (project === null) throw 'No task with that id';
+
+    let task = await getTask(taskId);
+
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].ownerId': '' } },
         { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
     );
 
@@ -129,5 +148,6 @@ module.exports = {
     editTask,
     removeTask,
     moveTask,
-    assignTask
+    assignTask,
+    unassignTask
 }

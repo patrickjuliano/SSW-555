@@ -1,4 +1,4 @@
-import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, List, ListItem, ListItemButton, ListItemIcon, TextField } from '@mui/material';
+import { Alert, Autocomplete, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, List, ListItem, ListItemButton, ListItemIcon, TextField } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import '../App.css';
@@ -16,264 +16,87 @@ const AssignTask = ({ project, refetch, open, onClose, task }) => {
 
 	const [fullyOpen, setFullyOpen] = useState(false);
 
-	const [title, setTitle] = useState(null);
-	const onTitleChange = (event) => setTitle(event.target.value);
-	const [titleError, setTitleError] = useState(null);
-
-	const [description, setDescription] = useState(null);
-	const onDescriptionChange = (event) => setDescription(event.target.value);
-	const [descriptionError, setDescriptionError] = useState(null);
-
-	const [subtasks, setSubtasks] = useState([]);
-	const onSubtaskAdd = () => {
-		setSubtasks(state => [...state, ""]);
-		setSubtaskErrors(state => [...state, null]);
-	}
-	const onSubtaskRemove = (index) => {
-		setSubtasks(state => state.filter((_, i) => i !== index));
-		setSubtaskErrors(state => state.filter((_, i) => i !== index));
-	}
-	const onSubtaskChange = (value, index) => {
-		const data = [...subtasks];
-		data[index] = value;
-		setSubtasks(data);
-	}
-	const [subtaskErrors, setSubtaskErrors] = useState([]);
-	const onSubtaskErrorClose = (index) => {
-		const data = [...subtaskErrors];
-		data[index] = null;
-		setSubtaskErrors(data);
-	}
-
-	const [oldSubtasks, setOldSubtasks] = useState([]);
-	const [oldSubtaskDeleteIds, setOldSubtaskDeleteIds] = useState([]);
-	const onOldSubtaskRemove = (index) => {
-		setOldSubtaskDeleteIds(state => [...state, oldSubtasks[index]._id])
-		setOldSubtasks(state => state.filter((_, i) => i !== index));
-		setOldSubtaskErrors(state => state.filter((_, i) => i !== index));
-	}
-	const onOldSubtaskChange = (value, index) => {
-		const data = [...oldSubtasks];
-		data[index].description = value;
-		setOldSubtasks(data);
-	}
-	const [oldSubtaskErrors, setOldSubtaskErrors] = useState([]);
-	const onOldSubtaskErrorClose = (index) => {
-		const data = [...oldSubtaskErrors];
-		data[index] = null;
-		setOldSubtaskErrors(data);
+	const [users, setUsers] = useState(null);
+	const [ownerId, setOwnerId] = useState(null);
+	const onOwnerChange = (event, user) => {
+		setOwnerId(user ? user._id : "");
 	}
 
 	const resetValues = () => {
-		if (task) {
-			setTitle(task.title);
-			setDescription(task.description);
-			setOldSubtasks(task.subtasks);
-		} else {
-			setTitle(null);
-			setDescription(null);
-			setOldSubtasks([]);
-		}
-		setSubtasks([]);
-		setOldSubtaskDeleteIds([]);
+		setUsers(null);
+		setOwnerId(task.ownerId);
 	}
-	const resetErrors = () => {
-		setTitleError(null);
-		setDescriptionError(null);
-		setSubtaskErrors([]);
-		setOldSubtaskErrors([]);
-	}
-	useEffect(() => {
-		if (open) {
-			resetValues();
-			resetErrors();
 
-			setFullyOpen(true);
+	useEffect(() => {
+		async function fetchData() {
+			if (open) {
+				resetValues();
+			}
 		}
+		fetchData();
 	}, [open]);
 
-	const closeTask = () => {
-		setFullyOpen(false);
-		onClose();
-	}
-
-	const onSubmit = () => {
-		let errors = 0;
-
-		try {
-			var newTitle = checkString(title);
-			setTitleError(null);
-		} catch (e) {
-			errors++;
-			setTitleError(e);
-		}
-		try {
-			var newDescription = checkString(description);
-			setDescriptionError(null);
-		} catch (e) {
-			errors++;
-			setDescriptionError(e);
-		}
-		const localOldSubtasks = [...oldSubtasks];
-		const localOldSubtaskErrors = [...oldSubtaskErrors];
-		for (let i = 0; i < localOldSubtasks.length; i++) {
-			try {
-				localOldSubtasks[i].description = checkString(localOldSubtasks[i].description);
-				localOldSubtaskErrors[i] = null;
-			} catch (e) {
-				errors++;
-				localOldSubtaskErrors[i] = e;
-			}
-		}
-		setOldSubtaskErrors(localOldSubtaskErrors);
-		const localSubtasks = [...subtasks];
-		const localSubtaskErrors = [...subtaskErrors];
-		for (let i = 0; i < localSubtasks.length; i++) {
-			try {
-				localSubtasks[i] = checkString(localSubtasks[i]);
-				localSubtaskErrors[i] = null;
-			} catch (e) {
-				errors++;
-				localSubtaskErrors[i] = e;
-			}
-		}
-		setSubtaskErrors(localSubtaskErrors);
-
-		if (errors == 0) {
-			async function fetchData() {
+	useEffect(() => {
+		async function fetchData() {
+			if (users === null && ownerId !== null) {
 				try {
-					let subtaskString = '';
-					if (localSubtasks.length === 1) {
-						subtaskString = `&subtask[]=${localSubtasks[0]}`;
-					} else {
-						for (let i = 0; i < localSubtasks.length; i++) {
-							subtaskString += `&subtask=${localSubtasks[i]}`;
-						}
+					const { data } = await axios.get(`http://localhost:4000/projects/${project._id}/users`);
+					
+					const updatedUsers = [];
+					for (let i = 0; i < data.length; i++) {
+						const user = data[i];
+						const updatedUser = { label: `${user.firstName} ${user.lastName} (${user.email})`, _id: user._id }
+						updatedUsers.push(updatedUser);
 					}
-					var { data } = task ? 
-						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}${subtaskString}`) :
-						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}${subtaskString}`);
-					if (task) {
-						for (let i = 0; i < localOldSubtasks.length; i++) {
-							const subtask = localOldSubtasks[i];
-							var { data } = await axios.patch(`http://localhost:4000/tasks/${task._id}/subtasks/${subtask._id}/edit?description=${subtask.description}`);
-						}
-						for (let i = 0; i < oldSubtaskDeleteIds.length; i++) {
-							const subtaskId = oldSubtaskDeleteIds[i];
-							var { data } = await axios.delete(`http://localhost:4000/tasks/${task._id}/subtasks/${subtaskId}`);
-						}
-					}
-					refetch();
-					closeTask();
+					setUsers(updatedUsers);
+					setFullyOpen(true);
 				} catch (e) {
 					// TODO
 					alert(e);
 				}
 			}
-			fetchData();
 		}
+		fetchData();
+	}, [users, ownerId]);
+
+	const closeForm = () => {
+		setFullyOpen(false);
+		onClose();
+	}
+
+	const onSubmit = () => {
+		async function fetchData() {
+			try {
+				const { data } = ownerId ?
+					await axios.patch(`http://localhost:4000/tasks/${task._id}/users/${ownerId}`) :
+					await axios.delete(`http://localhost:4000/tasks/${task._id}/users`);
+				refetch();
+				closeForm();
+			} catch (e) {
+				// TODO
+				alert(e);
+			}
+		}
+		fetchData();
 	}
 
 	return (
-		<Dialog open={fullyOpen} onClose={closeTask} fullWidth maxWidth="sm">
-			<DialogTitle>{task ? "Edit" : "Create"} Task</DialogTitle>
-			<DialogContent>
-				<DialogContentText>Enter a title for the task.</DialogContentText>
-				<TextField
-					autoFocus
-					margin="dense"
-					id="Title"
-					label="Title"
-					type="text"
-					variant="standard"
-					fullWidth
-					value={title}
-					onChange={onTitleChange}
-				/>
-				{titleError && <Alert severity="error" onClose={() => setTitleError(null)}>{titleError}</Alert>}
-
-				<DialogContentText mt={1}>Enter a description for the task.</DialogContentText>
-				<TextField
-					margin="dense"
-					id="Description"
-					label="Description"
-					type="text"
-					variant="standard"
-					fullWidth
-					value={description}
-					onChange={onDescriptionChange}
-				/>
-				{descriptionError && <Alert severity="error" onClose={() => setDescriptionError(null)}>{descriptionError}</Alert>}
-				
-				{/* <DialogContentText mt={1}>Please enter a due date for the task.</DialogContentText>
-				<LocalizationProvider dateAdapter={AdapterDayjs}>
-					<DatePicker />
-				</LocalizationProvider> */}
-
-				<DialogContentText mt={1}>Enter descriptions for any subtasks associated with this task.</DialogContentText>
-				<List disablePadding>
-					{oldSubtasks.map((subtask, index) => (
-						<ListItem disablePadding>
-							<ListItemButton onClick={() => onOldSubtaskRemove(index)} sx={{ p: 1 }}>
-								<ListItemIcon>
-									<RemoveCircleIcon />
-								</ListItemIcon>
-							</ListItemButton>
-							<TextField
-								margin="dense"
-								label="Subtask"
-								type="text"
-								variant="standard"
-								fullWidth
-								value={oldSubtasks[index].description}
-								onChange={(event) => onOldSubtaskChange(event.target.value, index)}
-							/>
-							{oldSubtaskErrors[index] && <Alert severity="error" onClose={() => onOldSubtaskErrorClose(index)}>{oldSubtaskErrors[index]}</Alert>}
-						</ListItem>
-					))}
-
-					{subtasks.map((subtask, index) => (
-						<ListItem disablePadding>
-							<ListItemButton onClick={() => onSubtaskRemove(index)} sx={{ p: 1 }}>
-								<ListItemIcon>
-									<RemoveCircleIcon />
-								</ListItemIcon>
-							</ListItemButton>
-							<TextField
-								margin="dense"
-								label="Subtask"
-								type="text"
-								variant="standard"
-								fullWidth
-								value={subtasks[index]}
-								onChange={(event) => onSubtaskChange(event.target.value, index)}
-							/>
-							{subtaskErrors[index] && <Alert severity="error" onClose={() => onSubtaskErrorClose(index)}>{subtaskErrors[index]}</Alert>}
-						</ListItem>
-					))}
-
-					<ListItem disablePadding>
-						<ListItemButton onClick={onSubtaskAdd} sx={{ p: 1 }}>
-							<ListItemIcon>
-								<AddCircleIcon />
-							</ListItemIcon>
-						</ListItemButton>
-						<TextField
-							margin="dense"
-							label="Subtask"
-							type="text"
-							variant="standard"
-							fullWidth
-							disabled
-						/>
-					</ListItem>
-				</List>
-				
-			</DialogContent>
-			<DialogActions>
-				<Button onClick={closeTask}>Cancel</Button>
-				<Button onClick={onSubmit}>Submit</Button>
-			</DialogActions>
+		<Dialog open={fullyOpen} onClose={closeForm} fullWidth maxWidth="xs">
+			
+				<DialogTitle>Assign Task</DialogTitle>
+				<DialogContent>
+					<DialogContentText mb={1}>Assign a user as the owner of this task.</DialogContentText>
+					<Autocomplete
+						value={users && ownerId ? users.find(user => user._id === ownerId).label : null}
+						onChange={onOwnerChange}
+						options={users}
+						renderInput={(params) => <TextField {...params} label="User" />}
+					/>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={closeForm}>Cancel</Button>
+					<Button onClick={onSubmit}>Submit</Button>
+				</DialogActions>
 		</Dialog>
 	);
 };

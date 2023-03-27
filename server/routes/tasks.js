@@ -194,4 +194,21 @@ router.patch('/:taskId/users/:userId', async (req, res) => {
     }
 });
 
+router.delete('/:taskId/users', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+    } catch (e) {
+        console.log(e);
+        return res.status(400).json({error: e});
+    }
+    try {
+        const task = await taskData.unassignTask(req.params.taskId);
+        res.status(200).json(task);
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
+
 module.exports = router;

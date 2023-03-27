@@ -93,7 +93,7 @@ async function getUsersInProject(projectId) {
     const project = await getProject(projectId);
     
     const allUsers = await userData.getAllUsers();
-    const users = allUsers.filter(user => user.projects.some(project => project._id === projectId));
+    const users = allUsers.filter(user => user.projects.includes(projectId));
     
     return users;
 }
