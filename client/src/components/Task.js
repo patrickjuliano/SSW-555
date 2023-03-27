@@ -1,7 +1,9 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import '../App.css';
+
+import CloseIcon from '@mui/icons-material/Close';
 
 const Task = ({ task, open, onClose, refetch, stages }) => {
 	axios.defaults.withCredentials = true;
@@ -55,8 +57,13 @@ const Task = ({ task, open, onClose, refetch, stages }) => {
 	return (
 		<div>
 			{task &&
-				<Dialog open={open} onClose={onClose} fullWidth>
-					<DialogTitle>{task.title}</DialogTitle>
+				<Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+					<DialogTitle>
+						{task.title}
+						<IconButton onClick={closeTask} aria-label="Close task" sx={{ position: 'absolute', right: 12, top: 12 }}>
+							<CloseIcon />
+						</IconButton>
+					</DialogTitle>
 					<DialogContent dividers>
 						<DialogContentText sx={{ fontWeight: "bold"}}>Description</DialogContentText>
 						<DialogContentText mb={1}>{task.description}</DialogContentText>
