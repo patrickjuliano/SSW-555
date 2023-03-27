@@ -47,13 +47,10 @@ const Photos = ({ project, refetch }) => {
 		}
 	}
 
-	const getImage = (file) => {
-		const fileReader = new FileReader();
-		fileReader.onload = (e) => {
-			const image = e.target.result;
-			return image;
-		}
-		fileReader.readAsDataURL(file);
+	const reorderPhotos = (photos) => {
+		const requiredPhotos = photos.filter(photo => photo.required);
+		const optionalPhotos = photos.filter(photo => !photo.required);
+		return requiredPhotos.concat(optionalPhotos);
 	}
 
 	return (
@@ -85,7 +82,7 @@ const Photos = ({ project, refetch }) => {
 			/>
 
 			<Grid container spacing={2}>
-				{project.photos && project.photos.map((photo, index) => (
+				{project.photos && reorderPhotos(project.photos).map((photo, index) => (
 					<Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
 						<Card variant="outlined">
 							<CardMedia
