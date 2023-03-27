@@ -176,4 +176,22 @@ router.delete('/:taskId/subtasks/:subtaskId', async (req, res) => {
     }
 });
 
+router.patch('/:taskId/users/:userId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.params.userId = validation.checkId(req.params.userId);
+    } catch (e) {
+        console.log(e);
+        return res.status(400).json({error: e});
+    }
+    try {
+        const task = await taskData.assignTask(req.params.taskId, req.params.userId);
+        res.status(200).json(task);
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
+
 module.exports = router;

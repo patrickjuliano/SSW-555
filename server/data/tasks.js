@@ -38,6 +38,7 @@ async function createTask(projectId, title, description) {
         _id: taskId,
         title: title,
         description: description,
+        ownerId: "",
         stage: 0,
         subtasks: []
     }
@@ -100,11 +101,33 @@ async function moveTask(taskId, forward) {
     return updatedTask;
 }
 
+async function assignTask(taskId, userId) {
+    taskId = validation.checkId(taskId);
+    userId = validation.checkId(userId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
+    if (project === null) throw 'No task with that id';
+
+    let task = await getTask(taskId);
+    const user = await projectData.findUserInProject(userId, project._id.toString());
+
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].ownerId': userId } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    task = await getTask(taskId);
+    return task;
+}
+
 module.exports = {
     getTask,
     getAllTasks,
     createTask,
     editTask,
     removeTask,
-    moveTask
+    moveTask,
+    assignTask
 }

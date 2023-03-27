@@ -18,6 +18,7 @@ async function getProject(projectId) {
     }
     for (let i = 0; i < project.tasks.length; i++) {
         project.tasks[i]._id = project.tasks[i]._id.toString();
+        project.tasks[i].ownerId = project.tasks[i].ownerId.toString();
         for (let j = 0; j < project.tasks[i].subtasks.length; j++) {
             project.tasks[i].subtasks[j]._id = project.tasks[i].subtasks[j]._id.toString();
         }
@@ -92,9 +93,20 @@ async function getUsersInProject(projectId) {
     const project = await getProject(projectId);
     
     const allUsers = await userData.getAllUsers();
-    const users = allUsers.filter(user => user.projects.includes(projectId));
+    const users = allUsers.filter(user => user.projects.some(project => project._id === projectId));
     
     return users;
+}
+
+async function findUserInProject(userId, projectId) {
+    userId = validation.checkId(userId);
+    projectId = validation.checkId(projectId);
+
+    const user = await userData.getUser(userId);
+    const project = await getProject(projectId);
+    if (!user.projects.some(project => project._id === projectId)) 'User does not belong to this project'
+
+    return user;
 }
 
 // async function removeProject(projectId) {
@@ -116,6 +128,7 @@ module.exports = {
     getAllProjects,
     createProject,
     joinProject,
-    getUsersInProject
+    getUsersInProject,
+    findUserInProject
     // removeProject
 }
