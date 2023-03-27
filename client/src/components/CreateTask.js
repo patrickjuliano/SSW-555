@@ -175,7 +175,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	}
 
 	return (
-		<Dialog open={fullyOpen} onClose={closeTask} fullWidth maxWidth="sm">
+		<Dialog open={fullyOpen} onClose={closeTask} fullWidth maxWidth="md">
 			<DialogTitle>{task ? "Edit" : "Create"} Task</DialogTitle>
 			<DialogContent>
 				<DialogContentText>Enter a title for the task.</DialogContentText>

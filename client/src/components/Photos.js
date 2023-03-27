@@ -74,7 +74,13 @@ const Photos = ({ project, refetch }) => {
 				<h3>Photos</h3>
 				<Button variant="contained" onClick={openCreatePhoto}>Create Photo</Button>
 			</div>
-			<CreatePhoto project={project} refetch={refetch} open={createPhotoOpen} onClose={closeCreatePhoto} />
+			<CreatePhoto 
+				project={project}
+				refetch={refetch}
+				open={createPhotoOpen}
+				onClose={closeCreatePhoto}
+				photo={null}
+			/>
 			<Confirmation
 				title="Delete Photo"
 				body="Are you sure you want to delete this photo?"
@@ -106,10 +112,10 @@ const Photos = ({ project, refetch }) => {
 									<AddAPhoto />
 									{/* <input type="file" accept=".png" hidden onChange={(event) => onImageUpload(photo._id, event)} /> */}
 								</IconButton>
-								<IconButton aria-label="Photo settings">
+								<IconButton aria-label="Photo settings" sx={{ marginLeft: 'auto' }}>
 									<Settings />
 								</IconButton>
-								<IconButton aria-label="Delete photo" onClick={() => setDeletePhotoId(photo._id)} sx={{ marginLeft: 'auto' }}>
+								<IconButton aria-label="Delete photo" onClick={() => setDeletePhotoId(photo._id)}>
 									<Delete />
 								</IconButton>
 							</CardActions>

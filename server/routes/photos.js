@@ -49,6 +49,23 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.id = validation.checkId(req.params.id);
+        req.query.title = validation.checkString(req.query.title);
+        req.query.required = validation.checkBoolean(req.query.required);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const photo = await photoData.editPhoto(req.params.id, req.query.title, req.query.required);
+        res.status(200).json(photo);
+    } catch (e) {
+        res.status(404).json({error: e});
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
     try {

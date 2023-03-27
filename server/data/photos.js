@@ -30,7 +30,7 @@ async function createPhoto(projectId, title, required) {
     title = validation.checkString(title);
     required = validation.checkBoolean(required);
 
-    const project = projectData.getProject(projectId);
+    const project = await projectData.getProject(projectId);
 
     const projectCollection = await projects();
     const photoId = new ObjectId();
@@ -45,6 +45,24 @@ async function createPhoto(projectId, title, required) {
 
     newPhoto._id = newPhoto._id.toString();
     return newPhoto;
+}
+
+async function editPhoto(photoId, title, required) {
+    photoId = validation.checkId(photoId);
+    title = validation.checkString(title);
+    required = validation.checkBoolean(required);
+
+    let photo = await getPhoto(photoId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'photos._id': new ObjectId(photoId) }, 
+        { $set: { 'photos.$[updatePhoto].title': title, 'photos.$[updatePhoto].required': required } },
+        { 'arrayFilters': [ { 'updatePhoto._id': new ObjectId(photoId) } ] }
+    );
+
+    photo = await getPhoto(photoId);
+    return photo;
 }
 
 async function removePhoto(photoId) {
@@ -82,6 +100,7 @@ module.exports = {
     getPhoto,
     getAllPhotos,
     createPhoto,
+    editPhoto,
     removePhoto,
     uploadPhoto
 }
