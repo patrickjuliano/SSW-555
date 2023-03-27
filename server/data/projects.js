@@ -70,7 +70,7 @@ async function joinProject(userId, projectId) {
     const user = await userData.getUser(userId);
     let project = await getProject(projectId);
 
-    const inProject = false;
+    let inProject = false;
     for (const id of user.projects) {
         if (id === projectId) {
             inProject = true;

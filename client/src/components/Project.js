@@ -1,4 +1,4 @@
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import '../App.css';
 import axios from 'axios';
@@ -9,6 +9,8 @@ import Communications from '../components/Communications';
 import KPI from '../components/KPI';
 import Error from '../components/Error';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 function TabPanel(props) {
   const { children, value, index, project, refetch, ...other } = props;
@@ -149,7 +151,15 @@ const Project = ({ user, projects }) => {
 		<div>
 			{project && owner &&
 				<div>
-					<h2>{project.title}</h2>
+					<div style={{ display: 'flex', alignItems: 'center', columnGap: 6 }}>
+						<h2>{project.title}</h2>
+						<Tooltip title='Copy Project ID'>
+							<IconButton onClick={() => {navigator.clipboard.writeText(project._id)}} sx={{ color: 'black' }}>
+								<ContentCopyIcon />
+							</IconButton>
+						</Tooltip>
+					</div>
+					
 					<p>Owner: {owner.firstName} {owner.lastName} ({owner.email})</p>
 					<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
 						<Tabs value={tab} onChange={changeTab} aria-label='Project tabs'>
