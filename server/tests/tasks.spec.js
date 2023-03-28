@@ -62,6 +62,45 @@ describe('Test task functionality', () => {
         });
     });
 
+    describe('Test editTask', () => {
+        it('Edit task successfully', async () => {
+            const title = 'First Test Task';
+            const description = 'This is a task created for testing purposes, now featuring a longer description';
+            task1 = await taskData.editTask(task1._id, title, description);
+            chai.expect(task1).to.have.property('title', title);
+            chai.expect(task1).to.have.property('description', description);
+        });
+    });
+
+    describe('Test removeTask', () => {
+        it('Remove task successfully', async () => {
+            const id = task2._id;
+            project = await taskData.removeTask(task2._id);
+            chai.expect(project.tasks.map(task => ({ _id: task._id }))).to.not.include({ _id: id });
+        });
+    });
+
+    describe('Test moveTask', () => {
+        it('Remove task successfully', async () => {
+            task1 = await taskData.moveTask(task1._id, true);
+            chai.expect(task1).to.have.property('stage', 1);
+        });
+    });
+
+    describe('Test assignTask', () => {
+        it('Assign task successfully', async () => {
+            task1 = await taskData.assignTask(task1._id, user._id);
+            chai.expect(task1).to.have.property('ownerId', user._id);
+        });
+    });
+
+    describe('Test unassignTask', () => {
+        it('Unassign task successfully', async () => {
+            task1 = await taskData.unassignTask(task1._id);
+            chai.expect(task1).to.have.property('ownerId', '');
+        });
+    });
+
     after('Close connection', async () => {
         // await dbConnection.closeConnection();
     });
