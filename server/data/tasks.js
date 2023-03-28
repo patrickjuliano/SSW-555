@@ -15,6 +15,10 @@ async function getTask(taskId) {
 
     const task = project.tasks.find(task => task._id.toString() === taskId);
     task._id = task._id.toString();
+    task.ownerId = task.ownerId.toString();
+    for (let i = 0; i < task.subtasks.length; i++) {
+        task.subtasks[i]._id = task.subtasks[i]._id.toString();
+    }
     return task;
 }
 

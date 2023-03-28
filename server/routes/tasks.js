@@ -151,7 +151,7 @@ router.patch('/:taskId/subtasks/:subtaskId/edit', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const subtask = await subtaskData.editDescription(req.params.taskId, req.params.subtaskId, req.query.description);
+        const subtask = await subtaskData.editSubtask(req.params.taskId, req.params.subtaskId, req.query.description);
         res.status(200).json(subtask);
     } catch (e) {
         console.log(e);

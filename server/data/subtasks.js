@@ -68,7 +68,7 @@ async function toggleSubtask(taskId, subtaskId, done) {
     return updatedSubtask;
 }
 
-async function editDescription(taskId, subtaskId, description) {
+async function editSubtask(taskId, subtaskId, description) {
     taskId = validation.checkId(taskId);
     subtaskId = validation.checkId(subtaskId);
     description = validation.checkString(description);
@@ -108,6 +108,6 @@ module.exports = {
     getAllSubtasks,
     createSubtask,
     toggleSubtask,
-    editDescription,
+    editSubtask,
     removeSubtask
 }

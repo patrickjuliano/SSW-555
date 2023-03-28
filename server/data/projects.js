@@ -61,6 +61,7 @@ async function createProject(userId, title) {
     const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
 
     newProject._id = newProject._id.toString();
+    newProject.owner = newProject.owner.toString();
     return newProject;
 }
 
