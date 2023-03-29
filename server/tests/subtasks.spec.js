@@ -48,6 +48,38 @@ describe('Test subtask functionality', () => {
         });
     });
 
+    describe('Test createSubtask', () => {
+        it('Create subtask successfully', async () => {
+            const description = 'This is a new subtask created for testing purposes';
+            const subtask = await subtaskData.createSubtask(task._id, description);
+            chai.expect(subtask).to.have.property('_id');
+            chai.expect(subtask).to.have.property('description', description);
+        });
+    });
+    
+    describe('Test editSubtask', () => {
+        it('Edit subtask successfully', async () => {
+            const description = 'This is a subtask created for testing purposes, now featuring a longer description';
+            subtask1 = await subtaskData.editSubtask(task._id, subtask1._id, description);
+            chai.expect(subtask1).to.have.property('description', description);
+        });
+    });
+    
+    describe('Test removeSubtask', () => {
+        it('Remove subtask successfully', async () => {
+            const id = subtask2._id;
+            task = await subtaskData.removeSubtask(task._id, subtask2._id);
+            chai.expect(task.subtasks.map(subtask => ({ _id: subtask._id }))).to.not.include({ _id: id });
+        });
+    });
+    
+    describe('Test toggleSubtask', () => {
+        it('Toggle task successfully', async () => {
+            subtask1 = await subtaskData.toggleSubtask(task._id, subtask1._id, true);
+            chai.expect(subtask1).to.have.property('done', true);
+        });
+    });
+    
     after('Close connection', async () => {
         // await dbConnection.closeConnection();
     });
