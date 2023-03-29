@@ -62,6 +62,39 @@ describe('Test photo functionality', () => {
         });
     });
 
+    describe('Test editPhoto', () => {
+        it('Edit photo successfully', async () => {
+            const title = 'First Test Photo';
+            const required = true;
+            photo1 = await photoData.editPhoto(photo1._id, title, required);
+            chai.expect(photo1).to.have.property('title', title);
+            chai.expect(photo1).to.have.property('required', required);
+        });
+    });
+    
+    describe('Test removePhoto', () => {
+        it('Remove photo successfully', async () => {
+            const id = photo2._id;
+            project = await photoData.removePhoto(photo2._id);
+            chai.expect(project.photos.map(photo => ({ _id: photo._id }))).to.not.include({ _id: id });
+        });
+    });
+    
+    describe('Test uploadPhoto', () => {
+        it('Upload photo successfully', async () => {
+            const src = 'https://images.unsplash.com/photo-1606921231106-f1083329a65c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80';
+            photo1 = await photoData.uploadPhoto(photo1._id, src);
+            chai.expect(photo1).to.have.property('src', src);
+        });
+    });
+    
+    describe('Test rescindPhoto', () => {
+        it('Rescind photo successfully', async () => {
+            photo1 = await photoData.rescindPhoto(photo1._id);
+            chai.expect(photo1).to.have.property('src', null);
+        });
+    });
+
     after('Close connection', async () => {
         // await dbConnection.closeConnection();
     });
