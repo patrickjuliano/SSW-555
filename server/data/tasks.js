@@ -18,6 +18,12 @@ async function getTask(taskId) {
     task.ownerId = task.ownerId.toString();
     for (let i = 0; i < task.subtasks.length; i++) {
         task.subtasks[i]._id = task.subtasks[i]._id.toString();
+        for (let j = 0; j < task.subtasks[i].comments.length; j++) {
+            task.subtasks[i].comments[j]._id = task.subtasks[i].comments[j]._id.toString();
+        }
+    }
+    for (let i = 0; i < task.comments.length; i++) {
+        task.comments[i] = task.comments[i].toString();
     }
     return task;
 }
@@ -34,7 +40,7 @@ async function createTask(projectId, title, description) {
     title = validation.checkString(title);
     description = validation.checkString(description);
 
-    const project = projectData.getProject(projectId);
+    const project = await projectData.getProject(projectId);
 
     const projectCollection = await projects();
     const taskId = new ObjectId();
@@ -44,7 +50,8 @@ async function createTask(projectId, title, description) {
         description: description,
         ownerId: "",
         stage: 0,
-        subtasks: []
+        subtasks: [],
+        comments: []
     }
 
     const updateInfo = await projectCollection.updateOne({ _id: new ObjectId(projectId) }, { $addToSet: { tasks: newTask } });

@@ -13,15 +13,24 @@ async function getProject(projectId) {
     if (project === null) throw 'No project with that id';
 
     project._id = project._id.toString();
-    for (let i = 0; i < project.photos.length; i++) {
-        project.photos[i]._id = project.photos[i]._id.toString();
-    }
     for (let i = 0; i < project.tasks.length; i++) {
         project.tasks[i]._id = project.tasks[i]._id.toString();
         project.tasks[i].ownerId = project.tasks[i].ownerId.toString();
         for (let j = 0; j < project.tasks[i].subtasks.length; j++) {
             project.tasks[i].subtasks[j]._id = project.tasks[i].subtasks[j]._id.toString();
+            for (let k = 0; k < project.tasks[i].subtasks[j].comments; k++) {
+                project.tasks[i].subtasks[j].comments[k] = project.tasks[i].subtasks[j].comments[k].toString();
+            }
         }
+        for (let j = 0; j < project.tasks[i].comments.length; j++) {
+            project.tasks[i].comments[j]._id = project.tasks[i].comments[j]._id.toString();
+        }
+    }
+    for (let i = 0; i < project.photos.length; i++) {
+        project.photos[i]._id = project.photos[i]._id.toString();
+    }
+    for (let i = 0; i < project.comments.length; i++) {
+        project.comments[i] = project.comments[i].toString();
     }
     return project;
 }
@@ -53,7 +62,8 @@ async function createProject(userId, title) {
         title: title,
         owner: new ObjectId(user._id),
         tasks: [],
-        photos: []
+        photos: [],
+        comments: []
     }
     
     const insertInfo = await projectCollection.insertOne(newProject);

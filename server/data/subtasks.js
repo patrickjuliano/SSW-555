@@ -16,6 +16,9 @@ async function getSubtask(taskId, subtaskId) {
     if (subtask === undefined) throw 'No subtask with that id';
 
     subtask._id = subtask._id.toString();
+    for (let i = 0; i < subtask.comments.length; i++) {
+        subtask.comments[i]._id = subtask.comments[i]._id.toString();
+    }
     return subtask;
 }
 
@@ -36,7 +39,8 @@ async function createSubtask(taskId, description) {
     let newSubtask = {
         _id: subtaskId,
         description: description,
-        done: false
+        done: false,
+        comments: []
     }
 
     const projectCollection = await projects();
