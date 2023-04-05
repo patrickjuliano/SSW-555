@@ -28,8 +28,8 @@ function TabPanel(props) {
           {
 		  	children == 'Tasks' ? <Tasks project={project} refetch={refetch} /> :
 			children == 'Photos' ? <Photos project={project} refetch={refetch} /> :
-			children == 'Communications' ? <Communications /> :
-			children == 'KPI' ? <KPI /> :
+			children == 'Communications' ? <Communications project={project} refetch={refetch} /> :
+			children == 'KPI' ? <KPI project={project} refetch={refetch} /> :
 			'Not found'
 		  }
         </Box>

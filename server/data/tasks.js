@@ -23,7 +23,7 @@ async function getTask(taskId) {
         }
     }
     for (let i = 0; i < task.comments.length; i++) {
-        task.comments[i] = task.comments[i].toString();
+        task.comments[i]._id = task.comments[i]._id.toString();
     }
     return task;
 }

@@ -29,7 +29,7 @@ const Tasks = ({ project, refetch }) => {
 		async function fetchData() {
 			if (task) {
 				const updatedTask = project.tasks.find(updatedTask => updatedTask._id === task._id);
-				if (updatedTask !== undefined) setTask(updatedTask);
+				setTask(updatedTask);
 			}
 		}
 		fetchData()
@@ -183,7 +183,8 @@ const Tasks = ({ project, refetch }) => {
 				onClose={() => setDeleteTaskId(null)}
 				onSubmit={deleteTask}
 			/>
-			<Task 
+			<Task
+				project={project}
 				task={task}
 				open={taskOpen}
 				onClose={() => setTaskOpen(false)}

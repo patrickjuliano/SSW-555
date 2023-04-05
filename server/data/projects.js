@@ -19,7 +19,7 @@ async function getProject(projectId) {
         for (let j = 0; j < project.tasks[i].subtasks.length; j++) {
             project.tasks[i].subtasks[j]._id = project.tasks[i].subtasks[j]._id.toString();
             for (let k = 0; k < project.tasks[i].subtasks[j].comments; k++) {
-                project.tasks[i].subtasks[j].comments[k] = project.tasks[i].subtasks[j].comments[k].toString();
+                project.tasks[i].subtasks[j].comments[k]._id = project.tasks[i].subtasks[j].comments[k]._id.toString();
             }
         }
         for (let j = 0; j < project.tasks[i].comments.length; j++) {
@@ -30,7 +30,7 @@ async function getProject(projectId) {
         project.photos[i]._id = project.photos[i]._id.toString();
     }
     for (let i = 0; i < project.comments.length; i++) {
-        project.comments[i] = project.comments[i].toString();
+        project.comments[i]._id = project.comments[i]._id.toString();
     }
     return project;
 }
