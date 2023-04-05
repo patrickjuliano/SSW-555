@@ -135,5 +135,8 @@ module.exports = {
     getCommentInSubtask,
     getAllCommentsInProject,
     getAllCommentsInTask,
-    getAllCommentsInSubtask
+    getAllCommentsInSubtask,
+    createCommentInProject,
+    createCommentInTask,
+    createCommentInSubtask
 }
