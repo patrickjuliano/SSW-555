@@ -52,4 +52,50 @@ router.get('/subtasks/:commentId', async (req, res) => {
     }
 });
 
+router.post('/projects/:projectId', async (req, res) => {
+    try {
+        req.params.projectId = validation.checkId(req.params.projectId);
+        req.query.content = validation.checkString(req.query.content);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const comment = await commentData.createCommentInProject(req.params.projectId, req.session.userId, req.query.content);
+        return res.status(200).json(comment);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
+router.post('/tasks/:taskId', async (req, res) => {
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.query.content = validation.checkString(req.query.content);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const comment = await commentData.createCommentInTask(req.params.taskId, req.session.userId, req.query.content);
+        return res.status(200).json(comment);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
+router.post('/subtasks/:taskId/:subtaskId', async (req, res) => {
+    try {
+        req.params.taskId = validation.checkId(req.params.taskId);
+        req.params.subtaskId = validation.checkId(req.params.subtaskId);
+        req.query.content = validation.checkString(req.query.content);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const comment = await commentData.createCommentInSubtask(req.params.taskId, req.params.subtaskId, req.session.userId, req.query.content);
+        return res.status(200).json(comment);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
 module.exports = router;
