@@ -67,6 +67,68 @@ async function getAllCommentsInSubtask(taskId, subtaskId) {
     return subtask.comments;
 }
 
+async function createComment(userId, content) {
+    userId = validation.checkId(userId);
+    content = validation.checkString(content);
+
+    const comment = {
+        _id: new ObjectId(),
+        userId: new ObjectId(userId),
+        date: new Date(),
+        content: content
+    }
+
+    return comment;
+}
+async function createCommentInProject(projectId, userId, content) {
+    projectId = validation.checkId(projectId);
+    userId = validation.checkId(userId);
+    content = validation.checkString(content);
+
+    const comment = await createComment(userId, content);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne({ _id: new ObjectId(projectId) }, { $addToSet: { comments: comment } });
+
+    comment._id = comment._id.toString();
+    return comment;
+}
+async function createCommentInTask(taskId, userId, content) {
+    taskId = validation.checkId(taskId);
+    userId = validation.checkId(userId);
+    content = validation.checkString(content);
+
+    const comment = await createComment(userId, content);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $addToSet: { 'tasks.$[updateTask].comments': comment } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    comment._id = comment._id.toString();
+    return comment;
+}
+async function createCommentInSubtask(taskId, subtaskId, userId, content) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    userId = validation.checkId(userId);
+    content = validation.checkString(content);
+
+    const comment = await createComment(userId, content);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $addToSet: { 'tasks.$[updateTask].subtasks.$[updateSubtask].comments': comment } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateSubtask._id': new ObjectId(subtaskId) } ] }
+    );
+
+    comment._id = comment._id.toString();
+    return comment;
+}
+
 module.exports = {
     getCommentInProject,
     getCommentInTask,
