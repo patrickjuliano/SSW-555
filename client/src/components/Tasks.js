@@ -104,7 +104,7 @@ const Tasks = ({ project, refetch }) => {
 												flexWrap: 'wrap',
 											}}>
 												<span style={{ marginRight: 3 }}>{task.title}</span>
-												{createReminderIcon(task.dueDate)}
+												{createReminderIcon(task.stage, task.dueDate)}
 											</Typography>
 											<Typography variant="body2">{task.description.substring(0, descriptionCharacterLimit)}{task.description.length > descriptionCharacterLimit && '...'}</Typography>
 										</CardContent>
@@ -165,8 +165,8 @@ const Tasks = ({ project, refetch }) => {
 		);
 	}
 
-	const createReminderIcon = (dueDate) => {
-		if (!dueDate) return null;
+	const createReminderIcon = (stage, dueDate) => {
+		if (stage >= stages.length - 1 || !dueDate) return null;
 		const diff = dayjs(dueDate).diff(dayjs(), "day");
 		return diff <= 0 ? <AssignmentLateIcon color={diff === 0 ? "warning" : "error"} /> : null;
 	}
