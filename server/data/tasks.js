@@ -35,10 +35,11 @@ async function getAllTasks(projectId) {
     return project.tasks;
 }
 
-async function createTask(projectId, title, description) {
+async function createTask(projectId, title, description, dueDate) {
     projectId = validation.checkId(projectId);
     title = validation.checkString(title);
     description = validation.checkString(description);
+    dueDate = validation.checkDate(dueDate);
 
     const project = await projectData.getProject(projectId);
 
@@ -48,6 +49,7 @@ async function createTask(projectId, title, description) {
         _id: taskId,
         title: title,
         description: description,
+        dueDate: dueDate,
         ownerId: "",
         stage: 0,
         subtasks: [],
@@ -60,17 +62,18 @@ async function createTask(projectId, title, description) {
     return newTask;
 }
 
-async function editTask(taskId, title, description) {
+async function editTask(taskId, title, description, dueDate) {
     taskId = validation.checkId(taskId);
     title = validation.checkString(title);
     description = validation.checkString(description);
+    dueDate = validation.checkDate(dueDate);
 
     let task = await getTask(taskId);
 
     const projectCollection = await projects();
     const updateInfo = await projectCollection.updateOne(
         { 'tasks._id': new ObjectId(taskId) }, 
-        { $set: { 'tasks.$[updateTask].title': title, 'tasks.$[updateTask].description': description } },
+        { $set: { 'tasks.$[updateTask].title': title, 'tasks.$[updateTask].description': description, 'tasks.$[updateTask].dueDate': dueDate } },
         { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
     );
 

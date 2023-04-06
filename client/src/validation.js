@@ -1,3 +1,4 @@
+const dayjs = require('dayjs');
 const emailValidator = require('email-validator');
 
 function checkFile(file) {
@@ -48,14 +49,11 @@ function checkNonnegativeInteger(int) {
     return int;
 }
 
-function checkDate(day, month, year) {
-    day = checkNonnegativeInteger(day);
-    month = checkNonnegativeInteger(month);
-    year = checkNonnegativeInteger(year);
-    if (((month === 2) && ((day > 29) || ((day === 29) && ((year % 400 !== 0) && ((year % 4 !== 0) || (year % 100 === 0)))))) ||
-    ((month === 4 || month === 6 || month === 9 || month === 11) && (day > 30)) ||
-    ((month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12) && (day > 31))) throw 'You must provide a valid date';
-    return { day, month, year };
+function checkDate(date) {
+    if (!date) throw 'You must provide a date';
+    if (date instanceof dayjs) date = date.toDate();
+    if (!date || !(date instanceof Date) || isNaN(date)) throw 'You must provide a valid date';
+    return date;
 }
 
 function checkEmail(email) {

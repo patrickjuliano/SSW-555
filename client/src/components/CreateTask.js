@@ -2,7 +2,7 @@ import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogCo
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import '../App.css';
-import { checkBoolean, checkString } from '../validation';
+import { checkBoolean, checkDate, checkString } from '../validation';
 
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
@@ -10,6 +10,7 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 
 const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	axios.defaults.withCredentials = true;
@@ -23,6 +24,10 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	const [description, setDescription] = useState(null);
 	const onDescriptionChange = (event) => setDescription(event.target.value);
 	const [descriptionError, setDescriptionError] = useState(null);
+
+	const [dueDate, setDueDate] = useState(null);
+	const onDueDateChange = (value) => setDueDate(value);
+	const [dueDateError, setDueDateError] = useState(null);
 
 	const [subtasks, setSubtasks] = useState([]);
 	const onSubtaskAdd = () => {
@@ -68,10 +73,12 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		if (task) {
 			setTitle(task.title);
 			setDescription(task.description);
+			setDueDate(task.dueDate);
 			setOldSubtasks(task.subtasks);
 		} else {
 			setTitle(null);
 			setDescription(null);
+			setDueDate(null);
 			setOldSubtasks([]);
 		}
 		setSubtasks([]);
@@ -80,6 +87,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 	const resetErrors = () => {
 		setTitleError(null);
 		setDescriptionError(null);
+		setDueDateError(null);
 		setSubtaskErrors([]);
 		setOldSubtaskErrors([]);
 	}
@@ -113,6 +121,14 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		} catch (e) {
 			errors++;
 			setDescriptionError(e);
+		}
+		try {
+			var newDueDate = checkDate(dueDate);
+			alert(newDueDate instanceof Date);
+			setDueDateError(null);
+		} catch (e) {
+			errors++;
+			setDueDateError(e);
 		}
 		const localOldSubtasks = [...oldSubtasks];
 		const localOldSubtaskErrors = [...oldSubtaskErrors];
@@ -151,8 +167,8 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 						}
 					}
 					var { data } = task ? 
-						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}${subtaskString}`) :
-						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}${subtaskString}`);
+						await axios.put(`http://localhost:4000/tasks/${task._id}?title=${newTitle}&description=${newDescription}&dueDate=${newDueDate}${subtaskString}`) :
+						await axios.post(`http://localhost:4000/tasks?projectId=${project._id}&title=${newTitle}&description=${newDescription}&dueDate=${newDueDate}${subtaskString}`);
 					if (task) {
 						for (let i = 0; i < localOldSubtasks.length; i++) {
 							const subtask = localOldSubtasks[i];
@@ -205,10 +221,11 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 				/>
 				{descriptionError && <Alert severity="error" onClose={() => setDescriptionError(null)}>{descriptionError}</Alert>}
 				
-				{/* <DialogContentText mt={1}>Please enter a due date for the task.</DialogContentText>
+				<DialogContentText mt={1} mb={1}>Enter a due date for the task.</DialogContentText>
 				<LocalizationProvider dateAdapter={AdapterDayjs}>
-					<DatePicker />
-				</LocalizationProvider> */}
+					<DatePicker value={dueDate} onChange={onDueDateChange} />
+				</LocalizationProvider>
+				{dueDateError && <Alert severity="error" onClose={() => setDueDateError(null)} sx={{ mt: .75 }}>{dueDateError}</Alert>}
 
 				<DialogContentText mt={1}>Enter descriptions for any subtasks associated with this task.</DialogContentText>
 				<List disablePadding>

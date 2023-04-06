@@ -39,6 +39,10 @@ router.post('/', async (req, res) => {
         req.query.projectId = validation.checkId(req.query.projectId);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
+        console.log(1);
+        req.query.dueDate = validation.checkDate(req.query.dueDate);
+        console.log(2);
+
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
@@ -48,7 +52,9 @@ router.post('/', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description);
+        let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description, req.query.dueDate);
+        console.log(3);
+
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
@@ -68,6 +74,7 @@ router.put('/:id', async (req, res) => {
         req.params.id = validation.checkId(req.params.id);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
+        req.query.dueDate = validation.checkDate(req.query.dueDate);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 req.query.subtask[i] = validation.checkString(req.query.subtask[i]);
@@ -78,7 +85,7 @@ router.put('/:id', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        let task = await taskData.editTask(req.params.id, req.query.title, req.query.description);
+        let task = await taskData.editTask(req.params.id, req.query.title, req.query.description, req.query.dueDate);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
