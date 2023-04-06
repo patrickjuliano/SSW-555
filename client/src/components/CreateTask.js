@@ -73,7 +73,7 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		if (task) {
 			setTitle(task.title);
 			setDescription(task.description);
-			setDueDate(task.dueDate);
+			setDueDate(dayjs(task.dueDate));
 			setOldSubtasks(task.subtasks);
 		} else {
 			setTitle(null);
@@ -124,7 +124,6 @@ const CreateTask = ({ project, refetch, open, onClose, task }) => {
 		}
 		try {
 			var newDueDate = checkDate(dueDate);
-			alert(newDueDate instanceof Date);
 			setDueDateError(null);
 		} catch (e) {
 			errors++;
