@@ -10,8 +10,10 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Delete from '@mui/icons-material/Delete';
 import Settings from '@mui/icons-material/Settings';
+import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import Task from './Task';
 import AssignTask from './AssignTask';
+import dayjs from 'dayjs';
 
 const descriptionCharacterLimit = 100;
 
@@ -96,7 +98,14 @@ const Tasks = ({ project, refetch }) => {
 								<Card variant="outlined">
 									<CardActionArea component="button" onClick={() => openTask(task)}>
 										<CardContent>
-											<Typography variant="h6" component="div">{task.title}</Typography>
+											<Typography variant="h6" component="div" style={{
+												display: 'flex',
+												alignItems: 'center',
+												flexWrap: 'wrap',
+											}}>
+												<span style={{ marginRight: 3 }}>{task.title}</span>
+												{createReminderIcon(task.dueDate)}
+											</Typography>
 											<Typography variant="body2">{task.description.substring(0, descriptionCharacterLimit)}{task.description.length > descriptionCharacterLimit && '...'}</Typography>
 										</CardContent>
 									</CardActionArea>
@@ -154,6 +163,12 @@ const Tasks = ({ project, refetch }) => {
 				))}
 			</Grid>
 		);
+	}
+
+	const createReminderIcon = (dueDate) => {
+		if (!dueDate) return null;
+		const diff = dayjs(dueDate).diff(dayjs(), "day");
+		return diff <= 0 ? <AssignmentLateIcon color={diff === 0 ? "warning" : "error"} /> : null;
 	}
 
 	return (
