@@ -132,6 +132,59 @@ async function createCommentInSubtask(taskId, subtaskId, userId, content) {
     return comment;
 }
 
+async function editCommentInProject(commentId, content) {
+    commentId = validation.checkId(commentId);
+    content = validation.checkString(content);
+
+    const projectCollection = await projects();
+    let project = await projectCollection.findOne({ 'comments._id': new ObjectId(commentId)});
+    if (project === null) throw 'No comment with that id';
+
+    const updateInfo = await projectCollection.updateOne(
+        { 'comments._id': new ObjectId(commentId) }, 
+        { $set: { 'comments.$[updateComment].content': content } },
+        { 'arrayFilters': [ { 'updateComment._id': new ObjectId(commentId) } ] }
+    );
+
+    const comment = await getCommentInProject(commentId);
+    return project;
+}
+async function editCommentInTask(taskId, commentId, content) {
+    taskId = validation.checkId(taskId);
+    commentId = validation.checkId(commentId);
+    content = validation.checkString(content);
+
+    let comment = await getCommentInTask(taskId, commentId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].comments.$[updateComment].content': content } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateComment._id': new ObjectId(commentId) } ] }
+    );
+
+    comment = await getCommentInTask(taskId, commentId);
+    return comment;
+}
+async function editCommentInSubtask(taskId, subtaskId, commentId, content) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    commentId = validation.checkId(commentId);
+    content = validation.checkString(content);
+
+    let comment = await getCommentInSubtask(taskId, subtaskId, commentId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $set: { 'tasks.$[updateTask].subtasks.$[updateSubtask].comments.$[updateComment].content': content } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateSubtask._id': new ObjectId(subtaskId) }, { 'updateComment._id': new ObjectId(commentId) } ] }
+    );
+
+    comment = await getCommentInSubtask(taskId, subtaskId, commentId);
+    return comment;
+}
+
 async function removeCommentInProject(commentId) {
     commentId = validation.checkId(commentId);
 
@@ -191,6 +244,9 @@ module.exports = {
     createCommentInProject,
     createCommentInTask,
     createCommentInSubtask,
+    editCommentInProject,
+    editCommentInTask,
+    editCommentInSubtask,
     removeCommentInProject,
     removeCommentInTask,
     removeCommentInSubtask
