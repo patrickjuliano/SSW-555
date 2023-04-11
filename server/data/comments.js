@@ -132,6 +132,55 @@ async function createCommentInSubtask(taskId, subtaskId, userId, content) {
     return comment;
 }
 
+async function removeCommentInProject(commentId) {
+    commentId = validation.checkId(commentId);
+
+    const projectCollection = await projects();
+    let project = await projectCollection.findOne({ 'comments._id': new ObjectId(commentId)});
+    if (project === null) throw 'No comment with that id';
+
+    const updateInfo = await projectCollection.updateOne(
+        { _id: project._id },
+        { $pull: { comments: { _id: new ObjectId(commentId) } } }
+    );
+
+    project = await projectData.getProject(project._id.toString());
+    return project;
+}
+async function removeCommentInTask(taskId, commentId) {
+    taskId = validation.checkId(taskId);
+    commentId = validation.checkId(commentId);
+
+    const comment = await getCommentInTask(taskId, commentId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $pull: { 'tasks.$[updateTask].comments': { _id: new ObjectId(commentId) } } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) } ] }
+    );
+
+    const task = await taskData.getTask(taskId);
+    return task;
+}
+async function removeCommentInSubtask(taskId, subtaskId, commentId) {
+    taskId = validation.checkId(taskId);
+    subtaskId = validation.checkId(subtaskId);
+    commentId = validation.checkId(commentId);
+
+    const comment = await getCommentInSubtask(taskId, subtaskId, commentId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'tasks._id': new ObjectId(taskId) }, 
+        { $pull: { 'tasks.$[updateTask].subtasks.$[updateSubtask].comments': { _id: new ObjectId(commentId) } } },
+        { 'arrayFilters': [ { 'updateTask._id': new ObjectId(taskId) }, { 'updateSubtask._id': new ObjectId(subtaskId) } ] }
+    );
+
+    const subtask = await subtaskData.getSubtask(taskId, subtaskId);
+    return subtask;
+}
+
 module.exports = {
     getCommentInProject,
     getCommentInTask,
@@ -141,5 +190,8 @@ module.exports = {
     getAllCommentsInSubtask,
     createCommentInProject,
     createCommentInTask,
-    createCommentInSubtask
+    createCommentInSubtask,
+    removeCommentInProject,
+    removeCommentInTask,
+    removeCommentInSubtask
 }
