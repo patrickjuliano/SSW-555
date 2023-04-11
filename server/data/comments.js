@@ -147,7 +147,7 @@ async function editCommentInProject(commentId, content) {
     );
 
     const comment = await getCommentInProject(commentId);
-    return project;
+    return comment;
 }
 async function editCommentInTask(taskId, commentId, content) {
     taskId = validation.checkId(taskId);

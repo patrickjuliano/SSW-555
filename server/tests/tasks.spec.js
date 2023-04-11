@@ -22,8 +22,8 @@ describe('Test task functionality', () => {
 
         user = await userData.createUser('John', 'Doe', 'john.doe@gmail.com', 'jdoe123', 'jdoe123', 'Construction Manager');
         project = await projectData.createProject(user._id, 'Test Project');
-        task1 = await taskData.createTask(project._id, title1, description1);
-        task2 = await taskData.createTask(project._id, title2, description2);
+        task1 = await taskData.createTask(project._id, title1, description1, new Date());
+        task2 = await taskData.createTask(project._id, title2, description2, new Date());
     });
 
     describe('Test getTask', () => {
@@ -55,7 +55,7 @@ describe('Test task functionality', () => {
         it('Create task successfully', async () => {
             const title = 'New Test Task';
             const description = 'This is a new task created for testing purposes';
-            const task = await taskData.createTask(project._id, title, description);
+            const task = await taskData.createTask(project._id, title, description, new Date());
             chai.expect(task).to.have.property('_id');
             chai.expect(task).to.have.property('title', title);
             chai.expect(task).to.have.property('description', description);
@@ -66,7 +66,7 @@ describe('Test task functionality', () => {
         it('Edit task successfully', async () => {
             const title = 'First Test Task';
             const description = 'This is a task created for testing purposes, now featuring a longer description';
-            task1 = await taskData.editTask(task1._id, title, description);
+            task1 = await taskData.editTask(task1._id, title, description, new Date());
             chai.expect(task1).to.have.property('title', title);
             chai.expect(task1).to.have.property('description', description);
         });
@@ -102,6 +102,6 @@ describe('Test task functionality', () => {
     });
 
     after('Close connection', async () => {
-        // await dbConnection.closeConnection();
+        await dbConnection.closeConnection();
     });
 });

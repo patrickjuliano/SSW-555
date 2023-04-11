@@ -22,7 +22,7 @@ describe('Test subtask functionality', () => {
 
         user = await userData.createUser('John', 'Doe', 'john.doe@gmail.com', 'jdoe123', 'jdoe123', 'Construction Manager');
         project = await projectData.createProject(user._id, 'Test Project');
-        task = await taskData.createTask(project._id, 'Test Task', 'This is a task created for testing purposes');
+        task = await taskData.createTask(project._id, 'Test Task', 'This is a task created for testing purposes', new Date());
         subtask1 = await subtaskData.createSubtask(task._id, description1);
         subtask2 = await subtaskData.createSubtask(task._id, description2);
     });
