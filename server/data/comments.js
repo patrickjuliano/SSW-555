@@ -85,7 +85,8 @@ async function createCommentInProject(projectId, userId, content) {
     userId = validation.checkId(userId);
     content = validation.checkString(content);
 
-    const comment = await createComment(userId, content);
+    const project = await projectData.getProject(projectId);
+    let comment = await createComment(userId, content);
 
     const projectCollection = await projects();
     const updateInfo = await projectCollection.updateOne({ _id: new ObjectId(projectId) }, { $addToSet: { comments: comment } });
@@ -98,7 +99,8 @@ async function createCommentInTask(taskId, userId, content) {
     userId = validation.checkId(userId);
     content = validation.checkString(content);
 
-    const comment = await createComment(userId, content);
+    const task = await taskData.getTask(taskId);
+    let comment = await createComment(userId, content);
 
     const projectCollection = await projects();
     const updateInfo = await projectCollection.updateOne(
@@ -116,7 +118,8 @@ async function createCommentInSubtask(taskId, subtaskId, userId, content) {
     userId = validation.checkId(userId);
     content = validation.checkString(content);
 
-    const comment = await createComment(userId, content);
+    const subtask = await subtaskData.getSubtask(taskId, subtaskId);
+    let comment = await createComment(userId, content);
 
     const projectCollection = await projects();
     const updateInfo = await projectCollection.updateOne(

@@ -39,9 +39,7 @@ router.post('/', async (req, res) => {
         req.query.projectId = validation.checkId(req.query.projectId);
         req.query.title = validation.checkString(req.query.title);
         req.query.description = validation.checkString(req.query.description);
-        console.log(1);
         req.query.dueDate = validation.checkDate(req.query.dueDate);
-        console.log(2);
 
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
@@ -53,7 +51,6 @@ router.post('/', async (req, res) => {
     }
     try {
         let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description, req.query.dueDate);
-        console.log(3);
 
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
