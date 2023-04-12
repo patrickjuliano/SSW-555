@@ -159,6 +159,7 @@ const Project = ({ user, projects, reset }) => {
 
 					<Subprojects
 						subprojects={project.subprojects}
+						whitelist={user.projects}
 						open={subprojectsOpen}
 						onClose={() => setSubprojectsOpen(false)}
 						refetch={() => setFetchFlag(true)}
