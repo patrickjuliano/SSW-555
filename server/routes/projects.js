@@ -28,6 +28,7 @@ router.get('/users/:id', async (req, res) => {
         const projects = await projectData.getAllProjects(req.params.id);
         return res.status(200).json({projects: projects});
     } catch (e) {
+        console.log(e);
         return res.status(404).json({error: e});
     }
 });
@@ -50,13 +51,18 @@ router.post('/', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
     try {
         req.query.title = validation.checkString(req.query.title);
+        if (req.query.parentId !== undefined) {
+            req.query.parentId = validation.checkId(req.query.parentId);
+            req.query.addMembers = validation.checkBoolean(req.query.addMembers);
+        }
     } catch (e) {
         return res.status(400).json({error: e});
     }
     try {
-        const project = await projectData.createProject(req.session.userId, req.query.title);
+        const project = await projectData.createProject(req.session.userId, req.query.title, req.query.parentId, req.query.addMembers);
         res.status(200).json(project);
     } catch (e) {
+        console.log(e);
         res.status(404).json({error: e});
     }
 });

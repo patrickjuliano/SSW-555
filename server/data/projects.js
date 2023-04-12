@@ -5,13 +5,17 @@ const { ObjectId } = require('mongodb');
 const userData = require('./users');
 const validation = require('../validation');
 
-async function getProject(projectId) {
+async function getProject(projectId, getParent = true, getChildren = true) {
     projectId = validation.checkId(projectId);
-
+    getParent = validation.checkBoolean(getParent);
+    getChildren = validation.checkBoolean(getChildren);
+    
+    // Find project
     const projectCollection = await projects();
     const project = await projectCollection.findOne({_id: new ObjectId(projectId)});
     if (project === null) throw 'No project with that id';
 
+    // Stringify ids
     project._id = project._id.toString();
     for (let i = 0; i < project.tasks.length; i++) {
         project.tasks[i]._id = project.tasks[i]._id.toString();
@@ -32,6 +36,36 @@ async function getProject(projectId) {
     for (let i = 0; i < project.comments.length; i++) {
         project.comments[i]._id = project.comments[i]._id.toString();
     }
+
+    // Attach parent project
+    if (project.parentId !== null) {
+        project.parentId = project.parentId.toString();
+
+        if (getParent) {
+            const rawParent = await getProject(project.parentId, false, false);
+            const parent = {
+                _id: rawParent._id.toString(),
+                title: rawParent.title
+            }
+            project.parent = parent;
+        }
+    } else {
+        if (getParent) project.parent = null;
+    }
+
+    // Attach child projects
+    if (getChildren) {
+        project.subprojects = [];
+        const rawSubprojects = await projectCollection.find({parentId: new ObjectId(projectId)}).toArray();
+        for (const rawSubproject of rawSubprojects) {
+            const subproject = {
+                _id: rawSubproject._id.toString(),
+                title: rawSubproject.title
+            }
+            project.subprojects.push(subproject);
+        }
+    }
+
     return project;
 }
 
@@ -49,9 +83,18 @@ async function getAllProjects(userId) {
     return projects;
 }
 
-async function createProject(userId, title) {
+async function createProject(userId, title, parentId, addMembers) {
     userId = validation.checkId(userId);
     title = validation.checkString(title);
+    if (parentId !== undefined) {
+        parentId = validation.checkId(parentId);
+        addMembers = validation.checkBoolean(addMembers);
+        
+        const parent = await getProject(parentId);
+        parentId = new ObjectId(parentId);
+    } else {
+        parentId = null;
+    }
     
     const user = await userData.getUser(userId);
     const userCollection = await users();
@@ -60,6 +103,7 @@ async function createProject(userId, title) {
     const newProject = {
         _id: projectId,
         title: title,
+        parentId: parentId,
         owner: new ObjectId(user._id),
         tasks: [],
         photos: [],
@@ -70,14 +114,23 @@ async function createProject(userId, title) {
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw 'Could not add project';
     const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
 
+    // If created as subproject and prompted to do so, add all members of parent project to subproject
+    if (parentId !== null && addMembers === true) {
+        const users = await getUsersInProject(parentId.toString());
+        for (const user of users) {
+            await joinProject(user._id, projectId.toString(), false);
+        }
+    }
+
     newProject._id = newProject._id.toString();
     newProject.owner = newProject.owner.toString();
     return newProject;
 }
 
-async function joinProject(userId, projectId) {
+async function joinProject(userId, projectId, throwIfMember = true) {
     userId = validation.checkId(userId);
     projectId = validation.checkId(projectId);
+    throwIfMember = validation.checkBoolean(throwIfMember);
 
     const user = await userData.getUser(userId);
     let project = await getProject(projectId);
@@ -89,10 +142,17 @@ async function joinProject(userId, projectId) {
             break;
         }
     }
-    if (inProject) throw 'User already belongs to this project';
+    if (inProject && throwIfMember) throw 'User already belongs to this project';
 
-    const userCollection = await users();
-    const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
+    if (!inProject) {
+        const userCollection = await users();
+        const updateInfo = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $addToSet: { projects: new ObjectId(projectId) } });
+    }
+
+    // Join parent project if it exists
+    if (project.parentId !== null) {
+        await joinProject(userId, project.parentId, false);
+    }
     
     project = await getProject(projectId);
     return project;
