@@ -11,8 +11,7 @@ import Error from '../components/Error';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MenuIcon from '@mui/icons-material/Menu';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import Subprojects from './Subprojects';
 
@@ -128,6 +127,13 @@ const Project = ({ user, projects, reset }) => {
 			{project && owner &&
 				<div>
 					<div style={{ display: 'flex', alignItems: 'center' }}>
+						{project && project.parent &&
+							<Tooltip title={`Navigate to ${project.parent.title}`} style={{ marginRight: 10 }}>
+								<IconButton onClick={() => navigate(`/projects/${project.parent._id}`)} sx={{ color: 'black' }}>
+									<KeyboardReturnIcon />
+								</IconButton>
+							</Tooltip>
+						}
 						<h2 style={{ marginRight: 10 }}>{project.title}</h2>
 						<Tooltip title='Copy Project ID'>
 							<IconButton onClick={() => {navigator.clipboard.writeText(project._id)}} sx={{ color: 'black' }}>
