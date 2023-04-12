@@ -38,7 +38,7 @@ function TabPanel(props) {
   );
 }
 
-const Project = ({ user, projects }) => {
+const Project = ({ user, projects, reset }) => {
   	axios.defaults.withCredentials = true;
 	let { id } = useParams();
 	const navigate = useNavigate();
@@ -47,42 +47,13 @@ const Project = ({ user, projects }) => {
 	const [owner, setOwner] = useState(null);
 	const [fetchFlag, setFetchFlag] = useState(false);
 
-	// async function fetchData() {
-	// 	try {
-	// 		var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
-	// 		const projectData = data;
-	// 		setProject(projectData);
-	// 		var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
-	// 		const ownerData = data;
-	// 		setOwner(ownerData);
-	// 	} catch (e) {
-	// 		alert(1);
-	// 		navigate('/error');
-	// 	}
-	// 	alert(2);
-	// 	try {
-	// 		let hasPermission = false;
-	// 		if (user && projects) {
-	// 			for (const project of projects) {
-	// 				if (project._id === id) {
-	// 					hasPermission = true;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 		if (!hasPermission) throw 'You do not have permission to view this page.';
-	// 	} catch (e) {
-	// 		alert(e);
-	// 		navigate('/error', { state: { error: e } });
-	// 	}
-	// }
-
 	useEffect(() => {
 		async function fetchData() {
 			try {
 				var { data } = await axios.get(`http://localhost:4000/projects/${id}`);
 				const projectData = data;
 				setProject(projectData);
+				reset(projectData._id);
 				var { data } = await axios.get(`http://localhost:4000/users/${projectData.owner}`);
 				const ownerData = data;
 				setOwner(ownerData);

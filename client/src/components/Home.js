@@ -2,7 +2,9 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import '../App.css';
 
-const Home = ({ user }) => {
+const Home = ({ user, reset }) => {
+	reset();
+
 	return (
 		<div>
             <h2>Home</h2>

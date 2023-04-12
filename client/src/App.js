@@ -8,14 +8,14 @@ import Home from './components/Home';
 import Project from './components/Project';
 import Error from './components/Error';
 
-import { Alert, AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, FormControl, Grid, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, Tab, Tabs, TextField, Toolbar, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, Checkbox, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, Tab, Tabs, TextField, Toolbar, Typography } from '@mui/material';
 import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
 import Search from '@mui/icons-material/Search';
 import Login from '@mui/icons-material/Login';
 import CreateOutlined from '@mui/icons-material/CreateOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import Logout from '@mui/icons-material/Logout';
-import { checkEmail, checkPassword, checkString, comparePasswords } from './validation';
+import { checkBoolean, checkEmail, checkPassword, checkString, comparePasswords } from './validation';
 
 const drawerWidth = 220;
 
@@ -24,6 +24,7 @@ function App() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(undefined);
+  const [project, setProject] = useState(null);
   const [projects, setProjects] = useState(null);
   const [fetchFlag, setFetchFlag] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,8 @@ function App() {
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createProjectTitle, setCreateProjectTitle] = useState(null);
   const [createProjectTitleError, setCreateProjectTitleError] = useState(null);
+  const [createProjectAsSubproject, setCreateProjectAsSubproject] = useState(null);
+  const [createProjectAddMembers, setCreateProjectAddMembers] = useState(null);
 
   const [joinProjectOpen, setJoinProjectOpen] = useState(false);
   const [joinProjectId, setJoinProjectId] = useState(null);
@@ -110,16 +113,30 @@ function App() {
       errors++;
       setCreateProjectTitleError(e);
     }
-
+    let asSubproject;
+    try {
+      asSubproject = checkBoolean(createProjectAsSubproject);
+    } catch (e) {
+      errors++;
+    }
+    let addMembers;
+    try {
+      addMembers = checkBoolean(createProjectAddMembers);
+    } catch (e) {
+      errors++;
+    }
+    
     if (errors == 0) {
       async function fetchData() {
         try {
-          const { data } = await axios.post(`http://localhost:4000/projects?title=${title}`);
+          const parentId = project && asSubproject ? `&parentId=${project}` : '';
+          const { data } = await axios.post(`http://localhost:4000/projects?title=${title}${parentId}&addMembers=${addMembers}`);
           resetCreateProjectErrors();
           handleCreateProjectClose();
           setFetchFlag(true);
         } catch (e) {
           // TODO
+          alert(e);
         }
       }
       fetchData();
@@ -306,6 +323,12 @@ function App() {
   const handleCreateProjectTitleChange = (event) => {
     setCreateProjectTitle(event.target.value);
   }
+  const handleCreateProjectAsSubprojectChange = (event) => {
+    setCreateProjectAsSubproject(event.target.checked);
+  }
+  const handleCreateProjectAddMembersChange = (event) => {
+    setCreateProjectAddMembers(event.target.checked);
+  }
 
   const handleJoinProjectIdChange = (event) => {
     setJoinProjectId(event.target.value);
@@ -339,6 +362,8 @@ function App() {
 
   const resetCreateProjectValues = () => {
     setCreateProjectTitle(null);
+    setCreateProjectAsSubproject(false);
+    setCreateProjectAddMembers(false);
   }
   const resetCreateProjectErrors = () => {
     hideCreateProjectTitleError();
@@ -411,7 +436,7 @@ function App() {
             <DialogTitle>Create Project</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Please enter a title for your project.
+                Enter a title for your project.
               </DialogContentText>
               <TextField
                 autoFocus
@@ -424,7 +449,28 @@ function App() {
                 onChange={handleCreateProjectTitleChange}
               />
               {createProjectTitleError && <Alert severity="error" onClose={hideCreateProjectTitleError}>{createProjectTitleError}</Alert>}
-            </DialogContent>
+
+              {project &&
+                <div>
+                  <DialogContentText mt={1}>Specify relation to selected project.</DialogContentText>
+                  <FormGroup>
+                      <FormControlLabel
+                        control={<Checkbox checked={createProjectAsSubproject} />}
+                        label="Create as subproject of selected project"
+                        onChange={handleCreateProjectAsSubprojectChange}
+                      />
+                  </FormGroup>
+                  <FormGroup>
+                      <FormControlLabel
+                        control={<Checkbox checked={createProjectAddMembers} />}
+                        label="Add all members of selected project"
+                        onChange={handleCreateProjectAddMembersChange}
+                        disabled={!createProjectAsSubproject}
+                      />
+                  </FormGroup>
+                </div>
+              }
+              </DialogContent>
             <DialogActions>
               <Button onClick={handleCreateProjectClose}>Cancel</Button>
               <Button onClick={handleCreateProjectSubmit}>Submit</Button>
@@ -697,10 +743,10 @@ function App() {
               <Toolbar />
               <div className='App-body'>
                 <Routes>
-                  <Route path='/' element={<Home user={user} />} />
-                  <Route path='/projects/:id' element={<Project user={user} projects={projects} />} />
-                  <Route path='/error' element={<Error />} />
-                  <Route path='*' element={<Navigate to={'/error'} replace />} />
+                  <Route path='/' element={<Home user={user} reset={() => setProject(null)} />} />
+                  <Route path='/projects/:id' element={<Project user={user} projects={projects} reset={(id) => setProject(id)} />} />
+                  <Route path='/error' element={<Error />} reset={() => setProject(null)} />
+                  <Route path='*' element={<Navigate to={'/error'} replace />} reset={() => setProject(null)} />
                 </Routes>
               </div>
             </Box>

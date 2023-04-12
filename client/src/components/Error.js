@@ -2,8 +2,9 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import '../App.css';
 
-const Error = () => {
+const Error = (reset) => {
 	const location = useLocation();
+	reset();
 
 	return (
 		<div>
