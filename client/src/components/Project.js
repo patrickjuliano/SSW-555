@@ -11,6 +11,10 @@ import Error from '../components/Error';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import MenuIcon from '@mui/icons-material/Menu';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import Subprojects from './Subprojects';
 
 function TabPanel(props) {
   const { children, value, index, project, refetch, ...other } = props;
@@ -45,6 +49,7 @@ const Project = ({ user, projects, reset }) => {
 	const [tab, setTab] = useState(0);
 	const [project, setProject] = useState(null);
 	const [owner, setOwner] = useState(null);
+	const [subprojectsOpen, setSubprojectsOpen] = useState(false);
 	const [fetchFlag, setFetchFlag] = useState(false);
 
 	useEffect(() => {
@@ -122,13 +127,20 @@ const Project = ({ user, projects, reset }) => {
 		<div>
 			{project && owner &&
 				<div>
-					<div style={{ display: 'flex', alignItems: 'center', columnGap: 6 }}>
-						<h2>{project.title}</h2>
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<h2 style={{ marginRight: 10 }}>{project.title}</h2>
 						<Tooltip title='Copy Project ID'>
 							<IconButton onClick={() => {navigator.clipboard.writeText(project._id)}} sx={{ color: 'black' }}>
 								<ContentCopyIcon />
 							</IconButton>
 						</Tooltip>
+						{project && project.subprojects && project.subprojects.length > 0 &&
+							<Tooltip title='View Subprojects'>
+								<IconButton onClick={() => setSubprojectsOpen(true)} sx={{ color: 'black' }}>
+									<AccountTreeIcon />
+								</IconButton>
+							</Tooltip>
+						}
 					</div>
 					
 					<p>Owner: {owner.firstName} {owner.lastName} ({owner.email})</p>
@@ -144,6 +156,13 @@ const Project = ({ user, projects, reset }) => {
 					<TabPanel value={tab} index={1} project={project} refetch={() => setFetchFlag(true)}>Photos</TabPanel>
 					<TabPanel value={tab} index={2} project={project} refetch={() => setFetchFlag(true)}>Communications</TabPanel>
 					<TabPanel value={tab} index={3} project={project} refetch={() => setFetchFlag(true)}>KPI</TabPanel>
+
+					<Subprojects
+						subprojects={project.subprojects}
+						open={subprojectsOpen}
+						onClose={() => setSubprojectsOpen(false)}
+						refetch={() => setFetchFlag(true)}
+					/>
 				</div>
 			}
 		</div>
