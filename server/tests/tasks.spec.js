@@ -22,8 +22,8 @@ describe('Test task functionality', () => {
 
         user = await userData.createUser('John', 'Doe', 'john.doe@gmail.com', 'jdoe123', 'jdoe123', 'Construction Manager');
         project = await projectData.createProject(user._id, 'Test Project');
-        task1 = await taskData.createTask(project._id, title1, description1, new Date());
-        task2 = await taskData.createTask(project._id, title2, description2, new Date());
+        task1 = await taskData.createTask(user._id, project._id, title1, description1, new Date());
+        task2 = await taskData.createTask(user._id, project._id, title2, description2, new Date());
     });
 
     describe('Test getTask', () => {
@@ -55,7 +55,7 @@ describe('Test task functionality', () => {
         it('Create task successfully', async () => {
             const title = 'New Test Task';
             const description = 'This is a new task created for testing purposes';
-            const task = await taskData.createTask(project._id, title, description, new Date());
+            const task = await taskData.createTask(user._id, project._id, title, description, new Date());
             chai.expect(task).to.have.property('_id');
             chai.expect(task).to.have.property('title', title);
             chai.expect(task).to.have.property('description', description);

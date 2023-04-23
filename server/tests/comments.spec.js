@@ -26,7 +26,7 @@ describe('Test comment functionality', () => {
 
         user = await userData.createUser('John', 'Doe', 'john.doe@gmail.com', 'jdoe123', 'jdoe123', 'Construction Manager');
         project = await projectData.createProject(user._id, 'Test Project');
-        task = await taskData.createTask(project._id, 'Test Task', 'This is a task', new Date());
+        task = await taskData.createTask(user._id, project._id, 'Test Task', 'This is a task', new Date());
         subtask = await subtaskData.createSubtask(task._id, 'This is a subtask');
         comment1 = await commentData.createCommentInProject(project._id, user._id, content1);
         comment2 = await commentData.createCommentInTask(task._id, user._id, content2);
