@@ -32,6 +32,51 @@ async function getAllMessages(projectId) {
     return project.activity;
 }
 
+async function createMessage(projectId, userId, content, level, taskId, subtaskId) {
+    projectId = validation.checkId(projectId);
+    userId = validation.checkId(userId);
+    content = validation.checkString(content);
+    level = validation.checkNonnegativeInteger(level);
+    if (level > 0) taskId = validation.checkId(taskId);
+    if (level > 1) subtaskId = validation.checkId(subtaskId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ _id: new ObjectId(projectId) });
+    if (project === null) throw 'No project with that id';
+
+    const messageId = new ObjectId();
+    const message = {
+        _id: messageId,
+        userId: new ObjectId(userId),
+        date: new Date(),
+        content,
+        level
+    }
+    if (level > 0) message.taskId = new ObjectId(taskId);
+    if (level > 1) message.subtaskId = new ObjectId(subtaskId);
+
+    const updateInfo = await projectCollection.updateOne(
+        { _id: new ObjectId(projectId) },
+        { $addToSet: { activity: message } }
+    );
+
+    return await getMessage(messageId.toString());
+}
+
+async function createMessageFromProject(projectId, userId, content) {
+    return await createMessage(projectId, userId, content, 0);
+}
+
+async function createMessageFromTask(taskId, userId, content) {
+    const projectId = await getProjectIdFromTaskId(taskId);
+    return await createMessage(projectId, userId, content, 1, taskId);
+}
+
+async function createMessageFromSubtask(taskId, subtaskId, userId, content) {
+    const projectId = await getProjectIdFromTaskId(taskId);
+    return await createMessage(projectId, userId, content, 2, taskId, subtaskId);
+}
+
 async function getProjectIdFromTaskId(taskId) {
     taskId = await validation.checkId(taskId);
 
@@ -44,5 +89,8 @@ async function getProjectIdFromTaskId(taskId) {
 
 module.exports = {
     getMessage,
-    getAllMessages
+    getAllMessages,
+    createMessageFromProject,
+    createMessageFromTask,
+    createMessageFromSubtask
 }
