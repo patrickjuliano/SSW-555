@@ -1,3 +1,4 @@
+const activityRoutes = require('./activity');
 const commentRoutes = require('./comments');
 const photoRoutes = require('./photos');
 const projectRoutes = require('./projects');
@@ -5,6 +6,7 @@ const taskRoutes = require('./tasks');
 const userRoutes = require('./users');
 
 const constructorMethod = (app) => {
+  app.use('/activity', activityRoutes);
   app.use('/comments', commentRoutes);
   app.use('/photos', photoRoutes);
   app.use('/projects', projectRoutes);

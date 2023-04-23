@@ -1,4 +1,5 @@
 
+const activityData = require('./activity');
 const commentData = require('./comments');
 const photoData = require('./photos');
 const projectData = require('./projects');
@@ -7,6 +8,7 @@ const taskData = require('./tasks');
 const userData = require('./users');
 
 module.exports = {
+  activity: activityData,
   comments: commentData,
   photos: photoData,
   projects: projectData,

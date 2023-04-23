@@ -3,6 +3,7 @@ const users = mongoCollections.users;
 const projects = mongoCollections.projects;
 const { ObjectId } = require('mongodb');
 const userData = require('./users');
+const activityData = require('./activity');
 const validation = require('../validation');
 
 async function getProject(projectId, getParent = true, getChildren = true) {
@@ -35,6 +36,12 @@ async function getProject(projectId, getParent = true, getChildren = true) {
     }
     for (let i = 0; i < project.comments.length; i++) {
         project.comments[i]._id = project.comments[i]._id.toString();
+    }
+    for (let i = 0; i < project.activity.length; i++) {
+        project.activity[i]._id = project.activity[i]._id.toString();
+        project.activity[i].userId = project.activity[i].userId.toString();
+        if ('taskId' in project.activity[i]) project.activity[i].taskId = project.activity[i].taskId.toString();
+        if ('subtaskId' in project.activity[i]) project.activity[i].subtaskId = project.activity[i].subtaskId.toString();
     }
 
     // Attach parent project
@@ -105,9 +112,11 @@ async function createProject(userId, title, parentId, addMembers) {
         title: title,
         parentId: parentId,
         owner: new ObjectId(user._id),
+        stage: 0,
         tasks: [],
         photos: [],
-        comments: []
+        comments: [],
+        activity: []
     }
     
     const insertInfo = await projectCollection.insertOne(newProject);
@@ -122,9 +131,8 @@ async function createProject(userId, title, parentId, addMembers) {
         }
     }
 
-    newProject._id = newProject._id.toString();
-    newProject.owner = newProject.owner.toString();
-    return newProject;
+    const project = await getProject(projectId.toString());
+    return project;
 }
 
 async function joinProject(userId, projectId, throwIfMember = true) {
@@ -153,7 +161,7 @@ async function joinProject(userId, projectId, throwIfMember = true) {
     if (project.parentId !== null) {
         await joinProject(userId, project.parentId, false);
     }
-    
+
     project = await getProject(projectId);
     return project;
 }
@@ -180,19 +188,23 @@ async function findUserInProject(userId, projectId) {
     return user;
 }
 
-// async function removeProject(projectId) {
-//     projectId = validation.checkId(projectId);
+async function moveProject(projectId, forward) {
+    projectId = validation.checkId(projectId);
+    forward = validation.checkBoolean(forward);
 
-//     const userCollection = await users();
-//     const user = await userData.getUserByProject(projectId);
+    const project = await getProject(projectId);
 
-//     return userCollection
-//         .updateOne({ _id: new ObjectId(user._id) }, { $pull: { projects: { _id: new ObjectId(projectId) } } })
-//         .then(async function () {
-//             const updatedUser = await userData.getUser(user._id);
-//             return updatedUser;
-//         })
-// }
+    const newStage = forward ? Math.min(project.stage + 1, 8) : Math.max(project.stage - 1, 0);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { _id: new ObjectId(projectId) }, 
+        { $set: { stage: newStage } }
+    );
+
+    const updatedProject = await getProject(projectId);
+    return updatedProject;
+}
 
 module.exports = {
     getProject,
@@ -200,6 +212,6 @@ module.exports = {
     createProject,
     joinProject,
     getUsersInProject,
-    findUserInProject
-    // removeProject
+    findUserInProject,
+    moveProject
 }

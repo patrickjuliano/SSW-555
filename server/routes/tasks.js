@@ -3,6 +3,7 @@ const router = express.Router();
 const data = require('../data');
 const taskData = data.tasks;
 const subtaskData = data.subtasks;
+const activityData = data.activity;
 const validation = require('../validation');
 
 router.get('/:id', async (req, res) => {
@@ -50,11 +51,12 @@ router.post('/', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        let task = await taskData.createTask(req.query.projectId, req.query.title, req.query.description, req.query.dueDate);
-
+        let task = await taskData.createTask(req.session.userId, req.query.projectId, req.query.title, req.query.description, req.query.dueDate);
+        await activityData.createMessageFromTask(task._id, req.session.userId, `created a task [${task.title}]`);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+                await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, `created a subtask [${task.title} > ${task.title}]`);
             }
         }
         task = await taskData.getTask(task._id);
@@ -83,6 +85,7 @@ router.put('/:id', async (req, res) => {
     }
     try {
         let task = await taskData.editTask(req.params.id, req.query.title, req.query.description, req.query.dueDate);
+        // await activityData.createMessageFromTask(task._id, req.session.userId, `edited a task [${task.title}]`);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);

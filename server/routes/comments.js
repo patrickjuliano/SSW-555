@@ -2,9 +2,6 @@ const express = require('express');
 const router = express.Router();
 const data = require('../data');
 const commentData = data.comments;
-const projectData = data.projects;
-const taskData = data.tasks;
-const subtaskData = data.subtasks;
 const validation = require('../validation');
 
 router.get('/projects/:commentId', async (req, res) => {

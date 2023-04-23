@@ -25,7 +25,7 @@ function checkString(string) {
 }
 
 function checkNumber(num) {
-    if (!num) throw 'You must provide a number';
+    if (num == null) throw 'You must provide a number';
     num = Number(num);
     if (isNaN(num)) throw 'You must provide a valid number';
     return num;

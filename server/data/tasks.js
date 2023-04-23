@@ -4,6 +4,7 @@ const projects = mongoCollections.projects;
 const { ObjectId } = require('mongodb');
 const userData = require('./users');
 const projectData = require('./projects');
+const activityData = require('./activity');
 const validation = require('../validation');
 
 async function getTask(taskId) {
@@ -35,7 +36,7 @@ async function getAllTasks(projectId) {
     return project.tasks;
 }
 
-async function createTask(projectId, title, description, dueDate) {
+async function createTask(userId, projectId, title, description, dueDate) {
     projectId = validation.checkId(projectId);
     title = validation.checkString(title);
     description = validation.checkString(description);
@@ -87,6 +88,9 @@ async function removeTask(taskId) {
     const projectCollection = await projects();
     const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId)});
     if (project === null) throw 'No task with that id';
+
+    const task = await getTask(taskId);
+    const title = task.title;
 
     const updateInfo = await projectCollection.updateOne({ _id: project._id }, { $pull: { tasks: { _id: new ObjectId(taskId) } } });
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const data = require('../data');
 const projectData = data.projects;
+const activityData = data.activity;
 const validation = require('../validation');
 
 router.get('/:id', async (req, res) => {
@@ -60,6 +61,7 @@ router.post('/', async (req, res) => {
     }
     try {
         const project = await projectData.createProject(req.session.userId, req.query.title, req.query.parentId, req.query.addMembers);
+        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `created the project [${project.title}]`);
         res.status(200).json(project);
     } catch (e) {
         console.log(e);
@@ -76,27 +78,28 @@ router.post('/:id/join', async (req, res) => {
     }
     try {
         const project = await projectData.joinProject(req.session.userId, req.params.id);
+        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `joined the project [${project.title}]`);
         res.status(200).json(project);
     } catch (e) {
         res.status(404).json({error: e});
     }
 });
 
-// router.delete('/:id', async (req, res) => {
-//     if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
-//     try {
-//         req.params.id = validation.checkId(req.params.id);
-//     } catch (e) {
-//         return res.status(400).json({error: e});
-//     }
-//     try {
-//         const project = await projectData.getProject(req.params.id);
-//         if (project.owner !== req.session.userId) return res.status(403).json({error: "You cannot delete another user's project"});
-//         const user = await projectData.removeProject(req.params.id);
-//         return res.status(200).json(user);
-//     } catch (e) {
-//         return res.status(404).json({error: e});
-//     }
-// });
+router.patch('/:id/move/:forward', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.id = validation.checkId(req.params.id);
+        req.params.forward = validation.checkBoolean(req.params.forward);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const project = await projectData.moveProject(req.params.id, req.params.forward);
+        res.status(200).json(project);
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({error: e});
+    }
+});
 
 module.exports = router;
