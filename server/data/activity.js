@@ -87,10 +87,41 @@ async function getProjectIdFromTaskId(taskId) {
     return project._id.toString();
 }
 
+async function editMessage(messageId, content) {
+    messageId = validation.checkId(messageId);
+    content = validation.checkString(content);
+
+    let message = await getMessage(messageId);
+
+    const projectCollection = await projects();
+    const updateInfo = await projectCollection.updateOne(
+        { 'activity._id': new ObjectId(messageId) }, 
+        { $set: { 'activity.$[updateMessage].content': content } },
+        { 'arrayFilters': [ { 'updateMessage._id': new ObjectId(messageId) } ] }
+    );
+
+    message = await getMessage(messageId);
+    return message;
+}
+
+async function removeMessage(messageId) {
+    messageId = validation.checkId(messageId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ 'activity._id': new ObjectId(messageId) });
+    if (project === null) throw 'No message with that id';
+
+    const updateInfo = await projectCollection.updateOne({ _id: project._id }, { $pull: { activity: { _id: new ObjectId(messageId) } } });
+
+    return { success: true };
+}
+
 module.exports = {
     getMessage,
     getAllMessages,
     createMessageFromProject,
     createMessageFromTask,
-    createMessageFromSubtask
+    createMessageFromSubtask,
+    editMessage,
+    removeMessage
 }
