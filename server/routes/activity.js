@@ -82,4 +82,35 @@ router.post('/subtasks/:taskId/:subtaskId', async (req, res) => {
     }
 });
 
+router.patch('/:messageId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.messageId = validation.checkId(req.params.messageId);
+        req.query.content = validation.checkString(req.query.content);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const message = await activityData.editMessage(req.params.messageId, req.query.content);
+        return res.status(200).json(message);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
+router.delete('/:messageId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({error: 'You are not logged in'});
+    try {
+        req.params.messageId = validation.checkId(req.params.messageId);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const project = await activityData.removeMessage(req.params.messageId);
+        return res.status(200).json(project);
+    } catch (e) {
+        return res.status(404).json({error: e});
+    }
+});
+
 module.exports = router;
