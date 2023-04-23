@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import '../App.css';
 import axios from 'axios';
+import KPI from '../components/KPI';
 import { Button, Divider, Grid, InputAdornment, List, ListItem, ListItemText, TextField, Tooltip, Typography } from '@mui/material';
 
-const Communications = ({ project, task, subtask, deselectSubtask, refetch }) => {
+const Activity = ({ project, task, subtask, deselectSubtask, refetch }) => {
 	axios.defaults.withCredentials = true;
 
 	const [loading, setLoading] = useState(true);
@@ -15,6 +16,24 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 	const getUser = (id) => {
 		const user = users.find(u => u._id === id);
 		return user === undefined ? 'Unknown' : `${user.firstName} ${user.lastName}`;
+	}
+
+	const formatMessage = (message) => {
+		const startingIndex = message.indexOf("[");
+		return <span>
+			<Typography
+				sx={{ display: 'inline', mr: .5  }}
+				component="span"
+			>
+				{message.slice(0, startingIndex - 1)}
+			</Typography>
+			<Typography
+				sx={{ display: 'inline', fontWeight: 'bold', color: 'text.secondary'}}
+				component="span"
+			>
+				{message.slice(startingIndex, message.length)}
+			</Typography>
+		</span>;
 	}
 
 	useEffect(() => {
@@ -34,24 +53,15 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 		fetchData()
 	}, [ project, task, subtask ]);
 
-	const onSubmit = () => {
-		async function fetchData() {
-			try {
-				const route = subtask ? `subtasks/${task._id}/${subtask._id}` : task ? `tasks/${task._id}` : `projects/${project._id}`;
-				const { data } = await axios.post(`http://localhost:4000/comments/${route}?content=${content}`);
-				setContent("");
-				refetch();
-			} catch (e) {
-				// TODO
-				alert(e);
-			}
-		}
-		fetchData();
-	}
-
 	return (
 		<div>
-            <h3 style={{ marginTop: task ? 0 : "1em" }}>Communications
+			{object == project &&
+				<KPI 
+					project={project}
+					refetch={refetch}
+				/>
+			}
+            <h3 style={{ marginBottom: 0 }}>Activity
 				{task &&
 					<Typography
 						sx={{ display: 'inline', pl: 1 }}
@@ -63,18 +73,8 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 					</Typography>
 				}
 			</h3>
-			{!loading &&
-				<TextField 
-					label="Add a comment..."
-					type="text"
-					fullWidth
-					value={content}
-					onChange={(event) => setContent(event.target.value)}
-					InputProps={{ endAdornment: <InputAdornment><Button variant="contained" onClick={onSubmit} disabled={content.trim().length === 0}>Comment</Button></InputAdornment> }}
-				/>
-			}
 			{loading ? "Loading..." : <List>
-				{object.comments.slice(0).reverse().map((comment, index) => (
+				{project.activity.slice(0).reverse().map((message, index) => (
 					<li>
 						<ListItem>
 							<ListItemText 
@@ -84,18 +84,9 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 											sx={{ display: 'inline', fontWeight: 'bold', mr: .5 }}
 											component="span"
 										>
-											{getUser(comment.userId)}
+											{getUser(message.userId)}
 										</Typography>
-										<Tooltip title={new Date(comment.date).toLocaleTimeString()} placement="top">
-											<Typography
-												sx={{ display: 'inline' }}
-												component="span"
-												variant="body2"
-												color="text.secondary"
-											>
-												{new Date(comment.date).toLocaleDateString()}
-											</Typography>
-										</Tooltip>
+										{formatMessage(message.content)}
 									</React.Fragment>
 								}
 								secondary={
@@ -104,15 +95,15 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 											sx={{ display: 'inline' }}
 											component="span"
 											variant="body2"
-											color="text.primary"
+											color="text.secondary"
 										>
-											{comment.content}
+											{`${new Date(message.date).toLocaleDateString([], {day: '2-digit', month: 'short', year: 'numeric'})} at ${new Date(message.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
 										</Typography>
 									</React.Fragment>
 								}
 							/>
 						</ListItem>
-						{index < object.comments.length - 1 && <Divider />}
+						{index < project.activity.length - 1 && <Divider />}
 					</li>
 				))}
 			</List>}
@@ -120,4 +111,4 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 	);
 };
 
-export default Communications;
+export default Activity;

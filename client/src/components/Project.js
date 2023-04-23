@@ -6,7 +6,7 @@ import axios from 'axios';
 import Tasks from '../components/Tasks';
 import Photos from '../components/Photos';
 import Communications from '../components/Communications';
-import KPI from '../components/KPI';
+import Activity from './Activity';
 import Error from '../components/Error';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ function TabPanel(props) {
 		  	children == 'Tasks' ? <Tasks project={project} refetch={refetch} /> :
 			children == 'Photos' ? <Photos project={project} refetch={refetch} /> :
 			children == 'Communications' ? <Communications project={project} refetch={refetch} /> :
-			children == 'KPI' ? <KPI project={project} refetch={refetch} /> :
+			children == 'Activity' ? <Activity project={project} refetch={refetch} /> :
 			'Not found'
 		  }
         </Box>
@@ -155,13 +155,13 @@ const Project = ({ user, projects, reset }) => {
 							<Tab label='Tasks' />
 							<Tab label='Photos' />
 							<Tab label='Communications' />
-							<Tab label='KPI' />
+							<Tab label='Status' />
 						</Tabs>
 					</Box>
 					<TabPanel value={tab} index={0} project={project} refetch={() => setFetchFlag(true)}>Tasks</TabPanel>
 					<TabPanel value={tab} index={1} project={project} refetch={() => setFetchFlag(true)}>Photos</TabPanel>
 					<TabPanel value={tab} index={2} project={project} refetch={() => setFetchFlag(true)}>Communications</TabPanel>
-					<TabPanel value={tab} index={3} project={project} refetch={() => setFetchFlag(true)}>KPI</TabPanel>
+					<TabPanel value={tab} index={3} project={project} refetch={() => setFetchFlag(true)}>Activity</TabPanel>
 
 					<Subprojects
 						subprojects={project.subprojects}
