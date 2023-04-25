@@ -61,7 +61,10 @@ router.post('/', async (req, res) => {
     }
     try {
         const project = await projectData.createProject(req.session.userId, req.query.title, req.query.parentId, req.query.addMembers);
-        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `created the project`);
+        await activityData.createMessageFromProject(project._id, req.session.userId, `created the project`);
+        if (req.query.parentId !== undefined) {
+            await activityData.createMessageFromProject(req.query.parentId, req.session.userId, `created a subproject`, project.title);
+        }
         res.status(200).json(project);
     } catch (e) {
         console.log(e);
