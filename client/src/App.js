@@ -650,7 +650,7 @@ function App() {
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
               <Toolbar>
                 <Typography variant="h6" noWrap component="div" as={Link} to={'/'} sx={{ color: 'white', textDecoration: 'none' }}>
-                  Solar Project Management Tool
+                  Solar EPC Hub
                 </Typography>
               </Toolbar>
             </AppBar>
@@ -700,14 +700,6 @@ function App() {
                       </div>
                     }
 
-                    <ListItem key='Settings' disablePadding>
-                      <ListItemButton>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <SettingsOutlined color='primary' />
-                        </ListItemIcon>
-                        <ListItemText primary='Settings' primaryTypographyProps={{ color: theme.palette.primary.main, fontWeight: 'bold' }} />
-                      </ListItemButton>
-                    </ListItem>
                     <ListItem key='Log Out' disablePadding>
                       <ListItemButton onClick={handleLogOutOpen}>
                         <ListItemIcon sx={{ minWidth: 40 }}>
