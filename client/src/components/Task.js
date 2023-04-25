@@ -74,6 +74,8 @@ const Task = ({ project, task, open, onClose, refetch, stages }) => {
 					<DialogContent dividers>
 						<DialogContentText sx={{ fontWeight: "bold", color: "text.primary" }}>Description</DialogContentText>
 						<DialogContentText mb={1}>{task.description}</DialogContentText>
+						<DialogContentText sx={{ fontWeight: "bold", color: "text.primary" }}>Due Date</DialogContentText>
+						<DialogContentText mb={1}>{new Date(task.dueDate).toLocaleDateString([], {day: '2-digit', month: 'short', year: 'numeric'})}</DialogContentText>
 						<DialogContentText sx={{ fontWeight: "bold", color: "text.primary" }}>Stage</DialogContentText>
 						<DialogContentText mb={1}>{stages[task.stage]}</DialogContentText>
 						<DialogContentText sx={{ fontWeight: "bold", color: "text.primary" }}>Owner</DialogContentText>
