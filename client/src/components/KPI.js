@@ -47,6 +47,7 @@ const KPI = ({ project, refetch }) => {
 						<span>
 							<Button
 								color="inherit"
+								variant="contained"
 								disabled={project.stage === 0}
 								onClick={moveProjectBackward}
 								sx={{ mr: 1 }}
@@ -58,7 +59,7 @@ const KPI = ({ project, refetch }) => {
 					<Box sx={{ flex: '1 1 auto' }} />
 					<Tooltip title={`${steps[0]} → ${steps[0]}`} placement="left">
 						<span>
-							<Button onClick={moveProjectForward} disabled={project.stage === steps.length}>
+							<Button variant="contained" onClick={moveProjectForward} disabled={project.stage === steps.length}>
 								{project.stage < steps.length - 1 ? 'Next' : 'Finish'}
 							</Button>
 						</span>

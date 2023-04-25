@@ -82,6 +82,11 @@ async function createMessageFromSubtask(taskId, subtaskId, userId, content, tags
     return await createMessage(project._id, project.title, userId, content, tags, 2, taskId, subtaskId);
 }
 
+async function createMessageFromPhoto(photoId, userId, content, tags) {
+    const project = await getProjectFromPhotoId(photoId);
+    return await createMessage(project._id, project.title, userId, content, tags, 1, photoId);
+}
+
 async function getProject(projectId) {
     projectId = await validation.checkId(projectId);
 
@@ -101,6 +106,17 @@ async function getProjectFromTaskId(taskId) {
     if (project === null) throw 'No task with that id';
 
     project._id = project._id.toString()
+    return project;
+}
+
+async function getProjectFromPhotoId(photoId) {
+    photoId = validation.checkId(photoId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ 'photos._id': new ObjectId(photoId)});
+    if (project === null) throw 'No photo with that id';
+
+    project._id = project._id.toString();
     return project;
 }
 
@@ -139,6 +155,7 @@ module.exports = {
     createMessageFromProject,
     createMessageFromTask,
     createMessageFromSubtask,
+    createMessageFromPhoto,
     editMessage,
     removeMessage
 }

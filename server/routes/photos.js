@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const data = require('../data');
 const photoData = data.photos;
+const activityData = data.activity;
 const validation = require('../validation');
+const { getPhoto } = require('../data/photos');
 
 router.get('/:id', async (req, res) => {
     try {
@@ -43,6 +45,7 @@ router.post('/', async (req, res) => {
     }
     try {
         const photo = await photoData.createPhoto(req.query.projectId, req.query.title, req.query.required);
+        await activityData.createMessageFromPhoto(photo._id, req.session.userId, 'created a photo', photo.title);
         res.status(200).json(photo);
     } catch (e) {
         res.status(404).json({error: e});
@@ -60,6 +63,7 @@ router.put('/:id', async (req, res) => {
     }
     try {
         const photo = await photoData.editPhoto(req.params.id, req.query.title, req.query.required);
+        await activityData.createMessageFromPhoto(photo._id, req.session.userId, 'edited a photo', photo.title);
         res.status(200).json(photo);
     } catch (e) {
         res.status(404).json({error: e});
@@ -74,6 +78,8 @@ router.delete('/:id', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
+        const photo = await getPhoto(req.params.id);
+        await activityData.createMessageFromPhoto(photo._id, req.session.userId, 'deleted a photo', photo.title);
         const project = await photoData.removePhoto(req.params.id);
         res.status(200).json(project);
     } catch (e) {
@@ -92,7 +98,11 @@ router.patch('/:id/upload/:src', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const photo = await photoData.uploadPhoto(req.params.id, req.params.src);
+        let photo = await getPhoto(req.params.id);
+        if (photo.src !== req.params.src) {
+            photo = await photoData.uploadPhoto(req.params.id, req.params.src);
+            await activityData.createMessageFromPhoto(photo._id, req.session.userId, 'uploaded a photo', photo.title);
+        }
         res.status(200).json(photo);
     } catch (e) {
         console.log(e);
@@ -109,7 +119,11 @@ router.delete('/:id/upload', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const photo = await photoData.rescindPhoto(req.params.id);
+        let photo = await getPhoto(req.params.id);
+        if (photo.src !== null) {
+            photo = await photoData.rescindPhoto(req.params.id);
+            await activityData.createMessageFromPhoto(photo._id, req.session.userId, 'removed a photo', photo.title);
+        }
         res.status(200).json(photo);
     } catch (e) {
         console.log(e);
