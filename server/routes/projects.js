@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
     }
     try {
         const project = await projectData.createProject(req.session.userId, req.query.title, req.query.parentId, req.query.addMembers);
-        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `created the project [${project.title}]`);
+        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `created the project`);
         res.status(200).json(project);
     } catch (e) {
         console.log(e);
@@ -78,7 +78,7 @@ router.post('/:id/join', async (req, res) => {
     }
     try {
         const project = await projectData.joinProject(req.session.userId, req.params.id);
-        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `joined the project [${project.title}]`);
+        const message = await activityData.createMessageFromProject(project._id, req.session.userId, `joined the project`);
         res.status(200).json(project);
     } catch (e) {
         res.status(404).json({error: e});
@@ -95,6 +95,8 @@ router.patch('/:id/move/:forward', async (req, res) => {
     }
     try {
         const project = await projectData.moveProject(req.params.id, req.params.forward);
+        const message = await activityData.createMessageFromProject(project._id, req.session.userId,
+            `${project.stage === 8 ? 'marked the project as complete' : `${req.params.forward ? 'advanced' : 'returned'} the project to Stage ${project.stage + 1}`}`);
         res.status(200).json(project);
     } catch (e) {
         console.log(e);

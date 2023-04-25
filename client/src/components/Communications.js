@@ -86,16 +86,14 @@ const Communications = ({ project, task, subtask, deselectSubtask, refetch }) =>
 										>
 											{getUser(comment.userId)}
 										</Typography>
-										<Tooltip title={new Date(comment.date).toLocaleTimeString()} placement="top">
-											<Typography
-												sx={{ display: 'inline' }}
-												component="span"
-												variant="body2"
-												color="text.secondary"
-											>
-												{new Date(comment.date).toLocaleDateString()}
-											</Typography>
-										</Tooltip>
+										<Typography
+											sx={{ display: 'inline' }}
+											component="span"
+											variant="body2"
+											color="text.secondary"
+										>
+											{`${new Date(comment.date).toLocaleDateString([], {day: '2-digit', month: 'short', year: 'numeric'})} at ${new Date(comment.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+										</Typography>
 									</React.Fragment>
 								}
 								secondary={

@@ -480,7 +480,7 @@ function App() {
             <DialogTitle>Join Project</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Please enter the ID of the project you want to join.
+                Enter the ID of the project you want to join.
               </DialogContentText>
               <TextField
                 autoFocus

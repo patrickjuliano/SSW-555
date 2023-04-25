@@ -32,13 +32,17 @@ async function getAllMessages(projectId) {
     return project.activity;
 }
 
-async function createMessage(projectId, userId, content, level, taskId, subtaskId) {
+async function createMessage(projectId, projectTitle, userId, content, tags, level, taskId, subtaskId) {
     projectId = validation.checkId(projectId);
+    projectTitle = validation.checkString(projectTitle);
     userId = validation.checkId(userId);
     content = validation.checkString(content);
+    if (tags !== undefined) tags = validation.checkString(tags);
     level = validation.checkNonnegativeInteger(level);
     if (level > 0) taskId = validation.checkId(taskId);
     if (level > 1) subtaskId = validation.checkId(subtaskId);
+
+    content += ` [${projectTitle}${tags !== undefined ? ` > ${tags}` : ''}]`;
 
     const projectCollection = await projects();
     const project = await projectCollection.findOne({ _id: new ObjectId(projectId) });
@@ -63,28 +67,41 @@ async function createMessage(projectId, userId, content, level, taskId, subtaskI
     return await getMessage(messageId.toString());
 }
 
-async function createMessageFromProject(projectId, userId, content) {
-    return await createMessage(projectId, userId, content, 0);
+async function createMessageFromProject(projectId, userId, content, tags) {
+    const project = await getProject(projectId);
+    return await createMessage(project._id, project.title, userId, content, tags, 0);
 }
 
-async function createMessageFromTask(taskId, userId, content) {
-    const projectId = await getProjectIdFromTaskId(taskId);
-    return await createMessage(projectId, userId, content, 1, taskId);
+async function createMessageFromTask(taskId, userId, content, tags) {
+    const project = await getProjectFromTaskId(taskId);
+    return await createMessage(project._id, project.title, userId, content, tags, 1, taskId);
 }
 
-async function createMessageFromSubtask(taskId, subtaskId, userId, content) {
-    const projectId = await getProjectIdFromTaskId(taskId);
-    return await createMessage(projectId, userId, content, 2, taskId, subtaskId);
+async function createMessageFromSubtask(taskId, subtaskId, userId, content, tags) {
+    const project = await getProjectFromTaskId(taskId);
+    return await createMessage(project._id, project.title, userId, content, tags, 2, taskId, subtaskId);
 }
 
-async function getProjectIdFromTaskId(taskId) {
+async function getProject(projectId) {
+    projectId = await validation.checkId(projectId);
+
+    const projectCollection = await projects();
+    const project = await projectCollection.findOne({ _id: new ObjectId(projectId) });
+    if (project === null) throw 'No project with that id';
+
+    project._id = project._id.toString()
+    return project;
+}
+
+async function getProjectFromTaskId(taskId) {
     taskId = await validation.checkId(taskId);
 
     const projectCollection = await projects();
     const project = await projectCollection.findOne({ 'tasks._id': new ObjectId(taskId) });
     if (project === null) throw 'No task with that id';
 
-    return project._id.toString();
+    project._id = project._id.toString()
+    return project;
 }
 
 async function editMessage(messageId, content) {

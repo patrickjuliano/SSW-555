@@ -3,8 +3,12 @@ const router = express.Router();
 const data = require('../data');
 const taskData = data.tasks;
 const subtaskData = data.subtasks;
+const userData = data.users;
 const activityData = data.activity;
 const validation = require('../validation');
+const { getTask } = require('../data/tasks');
+
+const stages = ["Backlog", "To Do", "In Progress", "Done"]
 
 router.get('/:id', async (req, res) => {
     try {
@@ -52,11 +56,11 @@ router.post('/', async (req, res) => {
     }
     try {
         let task = await taskData.createTask(req.session.userId, req.query.projectId, req.query.title, req.query.description, req.query.dueDate);
-        await activityData.createMessageFromTask(task._id, req.session.userId, `created a task [${task.title}]`);
+        await activityData.createMessageFromTask(task._id, req.session.userId, 'created a task', task.title);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
-                await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, `created a subtask [${task.title} > ${task.title}]`);
+                await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, 'created a subtask', `${task.title} > ${subtask.description}`);
             }
         }
         task = await taskData.getTask(task._id);
@@ -85,10 +89,11 @@ router.put('/:id', async (req, res) => {
     }
     try {
         let task = await taskData.editTask(req.params.id, req.query.title, req.query.description, req.query.dueDate);
-        // await activityData.createMessageFromTask(task._id, req.session.userId, `edited a task [${task.title}]`);
+        await activityData.createMessageFromTask(task._id, req.session.userId, 'edited a task', task.title);
         if ('subtask' in req.query) {
             for (let i = 0; i < req.query.subtask.length; i++) {
                 const subtask = await subtaskData.createSubtask(task._id, req.query.subtask[i]);
+                await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, 'created a subtask', `${task.title} > ${subtask.description}`);
             }
         }
         task = await taskData.getTask(task._id);
@@ -107,6 +112,8 @@ router.delete('/:id', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
+        const task = await taskData.getTask(req.params.id);
+        await activityData.createMessageFromTask(task._id, req.session.userId, 'deleted a task', task.title);
         const project = await taskData.removeTask(req.params.id);
         res.status(200).json(project);
     } catch (e) {
@@ -124,6 +131,7 @@ router.patch('/:id/move/:forward', async (req, res) => {
     }
     try {
         const task = await taskData.moveTask(req.params.id, req.params.forward);
+        await activityData.createMessageFromTask(task._id, req.session.userId, `${req.params.forward ? 'advanced' : 'returned'} a task to ${stages[task.stage]}`, task.title);
         res.status(200).json(task);
     } catch (e) {
         res.status(404).json({error: e});
@@ -140,7 +148,9 @@ router.patch('/:taskId/subtasks/:subtaskId', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
+        const task = await taskData.getTask(req.params.taskId);
         const subtask = await subtaskData.toggleSubtask(req.params.taskId, req.params.subtaskId, req.query.done);
+        await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, `marked a subtask as ${req.query.done ? 'complete' : 'incomplete'}`, `${task.title} > ${subtask.description}`);
         res.status(200).json(subtask);
     } catch (e) {
         res.status(404).json({error: e});
@@ -158,7 +168,12 @@ router.patch('/:taskId/subtasks/:subtaskId/edit', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const subtask = await subtaskData.editSubtask(req.params.taskId, req.params.subtaskId, req.query.description);
+        const task = await taskData.getTask(req.params.taskId);
+        let subtask = await subtaskData.getSubtask(req.params.taskId, req.params.subtaskId);
+        if (subtask.description !== req.query.description) {
+            subtask = await subtaskData.editSubtask(req.params.taskId, req.params.subtaskId, req.query.description);
+            await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, 'edited a subtask', `${task.title} > ${subtask.description}`);
+        }
         res.status(200).json(subtask);
     } catch (e) {
         console.log(e);
@@ -175,7 +190,10 @@ router.delete('/:taskId/subtasks/:subtaskId', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const task = await subtaskData.removeSubtask(req.params.taskId, req.params.subtaskId);
+        let task = await taskData.getTask(req.params.taskId);
+        const subtask = await subtaskData.getSubtask(req.params.taskId, req.params.subtaskId);
+        await activityData.createMessageFromSubtask(task._id, subtask._id, req.session.userId, 'deleted a subtask', `${task.title} > ${subtask.description}`);
+        task = await subtaskData.removeSubtask(req.params.taskId, req.params.subtaskId);
         res.status(200).json(task);
     } catch (e) {
         console.log(e);
@@ -193,7 +211,12 @@ router.patch('/:taskId/users/:userId', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const task = await taskData.assignTask(req.params.taskId, req.params.userId);
+        const user = await userData.getUser(req.params.userId);
+        let task = await getTask(req.params.taskId);
+        if (task.ownerId !== req.params.userId) {
+            task = await taskData.assignTask(req.params.taskId, req.params.userId);
+            await activityData.createMessageFromTask(task._id, req.session.userId, `assigned a task to ${user.firstName} ${user.lastName}`, task.title);
+        }
         res.status(200).json(task);
     } catch (e) {
         console.log(e);
@@ -210,7 +233,11 @@ router.delete('/:taskId/users', async (req, res) => {
         return res.status(400).json({error: e});
     }
     try {
-        const task = await taskData.unassignTask(req.params.taskId);
+        let task = await getTask(req.params.taskId);
+        if (task.ownerId !== '') {
+            task = await taskData.unassignTask(req.params.taskId);
+            await activityData.createMessageFromTask(task._id, req.session.userId, 'unassigned a task', task.title);
+        }
         res.status(200).json(task);
     } catch (e) {
         console.log(e);
